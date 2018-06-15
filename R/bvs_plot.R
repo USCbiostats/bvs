@@ -1,22 +1,31 @@
-#' Plot function for 'summary.bvs' object
+#' Plots for Top Variant and Region Inclusions
 
 #' @description This function allows the user to create image plots of the top variants and top Regions
 #' (any user specified set of variants such as pathways or genes) included in the top models.
 #' Variants and Regions are ordered based on marginal BF and regional BF which are plotted on the right axis.
 #' The width of the inclusion blocks are proportional to the posterior model probability that the variant or region is included in.
 #'
-#' @param object an object of class 'summary.bvs'
+#' @param x an object of class 'summary.bvs'
 #' @param type specifies whether to plot the top variants ("s") or the top regions ("r")
 #' @param num_models the number of top models to place on the x-axis
 #' @param num_snps if type = "s", the number of the top variants to place on the y-axis
 #' @param num_regions if type = "r", the number ofthe top regions to place on the y-axis
-#' @param plot_coef only used for rare variant analysis when rare = TRUE and there are not multiple regions. If plot_coef = TRUE, the log(OR) of the risk index for the top models is plotted on the x-axis
-#' @param true_coef optional vector of the true odds ratios of each of the variants to plot on the y-axis (i.e. if results are from a simulation)
-#' @param regions optional string vector with the region name for each of the variants. By default, region names are used from the 'summary.bvs' object. Using this argument will overwrite the names in the "summary.bvs" object.
+#' @param plot_coef only used for rare variant analysis when rare = TRUE and there are not
+#' multiple regions. If plot_coef = TRUE, the log(OR) of the risk index for the top models is plotted on the x-axis
+#' @param true_coef (optional) vector of the true odds ratios of each of the variants to plot on the
+#' y-axis (i.e. if results are from a simulation)
+#' @param regions (optional) string vector with the region name for each of the variants. By default, region
+#' names are used from the 'summary.bvs' x. Using this argument will overwrite the names in the "summary.bvs" x.
+#' @param prop_cases (optional) \eqn{p x 2} matrix giving the number of cases that have the
+#' variant in column 1 and the number of controls with the variant in column 2.
+#' If specified, these counts will be reported on the right axis under each variants marginal BF.
 #' @param main optional string variable giving the title of the plot
+#' @param ... additional arguments as required by plot S3 x
+
+#' @importFrom graphics abline axis image par
 
 #' @export
-plot.summary.bvs <- function(object,
+plot.summary.bvs <- function(x,
                              type = c("s", "r"),
                              num_models = 100,
                              num_snps = 20,
@@ -29,12 +38,12 @@ plot.summary.bvs <- function(object,
 
     # check type
     type <- match.arg(type)
-    if (type == "r" && is.null(object$active_region)) {
-        stop("Error: type = 'r', but active_region = NULL in bvs.summary object")
+    if (type == "r" && is.null(x$active_region)) {
+        stop("Error: type = 'r', but active_region = NULL in bvs.summary x")
     }
 
-    active <- object$active
-    post_prob <- object$post_prob
+    active <- x$active
+    post_prob <- x$post_prob
     null_ind <- which(rowSums(active) == 0)
     null_post <- post_prob[null_ind]
     active <- active[-null_ind, , drop = FALSE]
@@ -45,13 +54,13 @@ plot.summary.bvs <- function(object,
     post_prob <- post_prob[model_order]
     active <- active[model_order, , drop = FALSE]
 
-    if (!is.null(object$active_region)) {
-        active_region <- object$active_region[-null_ind, ][model_order, , drop = FALSE]
+    if (!is.null(x$active_region)) {
+        active_region <- x$active_region[-null_ind, ][model_order, , drop = FALSE]
         regionnames <- colnames(active_region)
         if (!is.null(regions)) {
-            warning("Note: Overwriting regions in bvs.summary object with values provided for regions = argument.")
+            warning("Note: Overwriting regions in bvs.summary x with values provided for regions = argument.")
         } else {
-            regions <- object$model_info$regions
+            regions <- x$model_info$regions
         }
     }
 
@@ -61,14 +70,14 @@ plot.summary.bvs <- function(object,
                     To use plot_coef, check that your model has rare = TRUE and does not have multiple regions.")
             plot_coef <- FALSE
         } else {
-            coef <- drop(object$coef[-null_ind, ][model_order, ])
+            coef <- drop(x$coef[-null_ind, ][model_order, ])
         }
     }
 
     # create title, column / row labels, and matrix with color values
     if (type == "s") {
         nvar <- num_snps
-        bf <- object$marg_bf
+        bf <- x$marg_bf
         order_top <- order(bf, decreasing = TRUE)[1:nvar]
         bf <- bf[order_top]
         rownms <- paste(colnames(active)[order_top], regions[order_top], sep = "\n")
@@ -86,11 +95,11 @@ plot.summary.bvs <- function(object,
         }
 
         if (is.null(main)) {
-            main <- paste("SNP Inclusions of Top Models \nGlobal BF =", round(object$global_bf, 1))
+            main <- paste("SNP Inclusions of Top Models \nGlobal BF =", round(x$global_bf, 1))
         }
     } else {
         nvar <- min(length(regionnames), num_regions)
-        bf_region <- object$region_bf
+        bf_region <- x$region_bf
         order_top <- order(bf_region, decreasing = TRUE)[1:nvar]
         bf_region <- bf_region[order_top]
         rownms <- colnames(active_region)[order_top]
@@ -104,7 +113,7 @@ plot.summary.bvs <- function(object,
         }
 
         if (is.null(main)) {
-            main <- paste("Region Inclusions of Top Models \nGlobal BF =", round(object$global_bf, 1))
+            main <- paste("Region Inclusions of Top Models \nGlobal BF =", round(x$global_bf, 1))
         }
     }
 

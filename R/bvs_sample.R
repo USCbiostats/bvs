@@ -1,4 +1,4 @@
-#' @export
+
 bvs_sample <- function(x,
                        y,
                        n,

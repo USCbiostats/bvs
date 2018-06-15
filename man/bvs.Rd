@@ -6,13 +6,17 @@
 \usage{
 bvs(y, x, forced = NULL, family = c("gaussian", "binomial"),
   method = c("enumerate", "sample"), rare = FALSE, regions = NULL,
-  prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000, outfile = NULL,
-  status_file = NULL, old_results = NULL, control = list())
+  prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000, save_iter = 0,
+  outfile = NULL, status_file = NULL, old_results = NULL,
+  control = list())
 }
 \arguments{
 \item{y}{outcome variable}
 
 \item{x}{predictor design matrix}
+
+\item{forced}{(optional) \eqn{n x c} dimensional matrix of c confounding variables that one wishes to adjust the
+analysis for and that will be forced into every model}
 
 \item{family}{error distribution for outcome variable}
 
@@ -36,10 +40,13 @@ wishes to incorporate into the estimation of the marginal inclusion probabilitie
 
 \item{a1}{(optional) if method = "enumerate", a \eqn{q x 1} vector of specified effects of each predictor-level covariate.}
 
-\item{hap}{if hap = TRUE, esimtate a set of haplotypes from the multiple variants within each moel and the marginal likelihood
+\item{hap}{(not yet implemented) if hap = TRUE, esimtate a set of haplotypes from the multiple variants within each moel and the marginal likelihood
 of each model is calculated based on the set of haplotypes.}
 
 \item{iter}{if method = "sample", the number of iterations to run the algorithm.}
+
+\item{save_iter}{the number of iterations between each checkpoint.  A checkpoint file is written
+every save.iter iterations}
 
 \item{outfile}{if method = "sample", character string giving the pathname of the checkpoint file to save the output of the algorithm.}
 

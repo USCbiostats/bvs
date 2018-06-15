@@ -5,6 +5,8 @@ NULL
 #' Bayesian Variable Selection
 #' @param y outcome variable
 #' @param x predictor design matrix
+#' @param forced (optional) \eqn{n x c} dimensional matrix of c confounding variables that one wishes to adjust the
+#' analysis for and that will be forced into every model
 #' @param family error distribution for outcome variable
 #' @param method specifies how to search the model space
 #' \itemize{
@@ -21,15 +23,22 @@ NULL
 #' @param prior_cov (optional) if method = "sample", a \eqn{p x q} matrix of q predictor-level covariates that the user
 #' wishes to incorporate into the estimation of the marginal inclusion probabilities using the iBMU algorithm.
 #' @param a1 (optional) if method = "enumerate", a \eqn{q x 1} vector of specified effects of each predictor-level covariate.
-#' @param hap if hap = TRUE, esimtate a set of haplotypes from the multiple variants within each moel and the marginal likelihood
+#' @param hap (not yet implemented) if hap = TRUE, esimtate a set of haplotypes from the multiple variants within each moel and the marginal likelihood
 #' of each model is calculated based on the set of haplotypes.
 #' @param iter if method = "sample", the number of iterations to run the algorithm.
+#' @param save_iter the number of iterations between each checkpoint.  A checkpoint file is written
+#' every save.iter iterations
 #' @param outfile if method = "sample", character string giving the pathname of the checkpoint file to save the output of the algorithm.
 #' @param status_file if method = "sample", character string giving the pathname of the file to write the status of the algorithm.
 #' @param old_results if method = "sample", old output from sampleBVS that has been run for a subset of the total number of
 #' iterations that the user wanted to run. if specified the sampling algorithm will start from the last sampled model in old.results.
 #' To be used if sampleBVS has been interrupted for some reason.
 #' @param control specifies 'bvs' control object.
+#'
+#' @import stats haplo.stats
+#' @importFrom utils txtProgressBar setTxtProgressBar
+#' @importFrom MASS mvrnorm
+#' @importFrom msm rtnorm
 
 #' @export
 bvs <- function(y,
@@ -43,11 +52,18 @@ bvs <- function(y,
                 a1 = 0,
                 hap = FALSE,
                 iter = 10000,
+                save_iter = 0,
                 outfile = NULL,
                 status_file = NULL,
                 old_results = NULL,
                 control = list())
 {
+
+    # check hap
+    if (hap) {
+        stop("Error: haplotypes not yet implemented.")
+    }
+
     # check family/method
     family <- match.arg(family)
     method <- match.arg(method)

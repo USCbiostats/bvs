@@ -31,7 +31,7 @@ bvs_fit <- function(z,
             num_vars <- 0
         }
     } else if (hap && num_active > 1) {
-        data.i <- hapBVS(data[, colnames(x)[z]], min.Hap.freq = 0.02)
+        data.i <- hap_bvs(x[, colnames(x)[z]], min_hap_freq = 0.02)
     } else {
         data.i <- x[, z, drop = FALSE]
         num_vars <- num_active

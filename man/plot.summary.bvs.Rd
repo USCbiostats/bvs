@@ -2,14 +2,14 @@
 % Please edit documentation in R/bvs_plot.R
 \name{plot.summary.bvs}
 \alias{plot.summary.bvs}
-\title{Plot function for 'summary.bvs' object}
+\title{Plots for Top Variant and Region Inclusions}
 \usage{
-\method{plot}{summary.bvs}(object, type = c("s", "r"), num_models = 100,
+\method{plot}{summary.bvs}(x, type = c("s", "r"), num_models = 100,
   num_snps = 20, num_regions = 20, plot_coef = FALSE, true_coef = NULL,
   regions = NULL, prop_cases = NULL, main = NULL, ...)
 }
 \arguments{
-\item{object}{an object of class 'summary.bvs'}
+\item{x}{an object of class 'summary.bvs'}
 
 \item{type}{specifies whether to plot the top variants ("s") or the top regions ("r")}
 
@@ -19,13 +19,22 @@
 
 \item{num_regions}{if type = "r", the number ofthe top regions to place on the y-axis}
 
-\item{plot_coef}{only used for rare variant analysis when rare = TRUE and there are not multiple regions. If plot_coef = TRUE, the log(OR) of the risk index for the top models is plotted on the x-axis}
+\item{plot_coef}{only used for rare variant analysis when rare = TRUE and there are not
+multiple regions. If plot_coef = TRUE, the log(OR) of the risk index for the top models is plotted on the x-axis}
 
-\item{true_coef}{optional vector of the true odds ratios of each of the variants to plot on the y-axis (i.e. if results are from a simulation)}
+\item{true_coef}{(optional) vector of the true odds ratios of each of the variants to plot on the
+y-axis (i.e. if results are from a simulation)}
 
-\item{regions}{optional string vector with the region name for each of the variants. By default, region names are used from the 'summary.bvs' object. Using this argument will overwrite the names in the "summary.bvs" object.}
+\item{regions}{(optional) string vector with the region name for each of the variants. By default, region
+names are used from the 'summary.bvs' x. Using this argument will overwrite the names in the "summary.bvs" x.}
+
+\item{prop_cases}{(optional) \eqn{p x 2} matrix giving the number of cases that have the
+variant in column 1 and the number of controls with the variant in column 2.
+If specified, these counts will be reported on the right axis under each variants marginal BF.}
 
 \item{main}{optional string variable giving the title of the plot}
+
+\item{...}{additional arguments as required by plot S3 x}
 }
 \description{
 This function allows the user to create image plots of the top variants and top Regions

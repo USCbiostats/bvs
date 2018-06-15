@@ -1,5 +1,4 @@
 
-#' @export
 bvs_enumerate <- function(x,
                           y,
                           n,
@@ -57,11 +56,11 @@ bvs_enumerate <- function(x,
     for (i in seq.int(num_models)) {
 
         # get active variables
-        z <- all_models[, i, drop = FALSE]
-        num_active <- sum(z)
+        z_current <- all_models[, i, drop = FALSE]
+        num_active <- sum(z_current)
 
         # fit model
-        fit_glm <- bvs_fit(z = z,
+        fit_glm <- bvs_fit(z = z_current,
                            num_active = num_active,
                            y = y,
                            x = x,
@@ -72,7 +71,7 @@ bvs_enumerate <- function(x,
                            region_ind = region_ind,
                            forced = forced,
                            p_forced = p_forced,
-                           family = family_func,
+                           family_func = family_func,
                            control = control,
                            weights = weights,
                            offset = offset,
@@ -84,7 +83,7 @@ bvs_enumerate <- function(x,
             if (rare) {
                 coef[i, which_ind] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
             } else {
-                coef[i, z] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+                coef[i, z_current] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
             }
         }
 
