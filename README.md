@@ -28,12 +28,16 @@ Example: Rare Variant Analysis with the Bayesian Risk Index (BRI)
 As a first example, below is code to run a rare variant analysis using the "sample" method on a binary outcome.
 
 ``` r
-# load the rare data set, first column is outcome variable
-load(RareData)
+
+# load bvs
+library(bvs)
+
+# load the rare variant data set, first column is outcome variable
+data(RareData)
 
 # run 2000 iterations of the MH algorithm (rare = TRUE will construct the BRI) 
 rare_analysis <- bvs(y = RareData$case, 
-                     x = as.matrix(RareData[, -1]),
+                     x = RareData[, -1],
                      family = "binomial",
                      method = "sample", 
                      rare = TRUE,
