@@ -55,7 +55,7 @@ rare_analysis <- bvs(y = RareData$case,
 rare_results <- summary(rare_analysis)
 
 # plot of top 25 models and top 10 variants
-plot(rare_results)
+plot(rare_results, num_models = 25, num_snps = 10)
 ```
 
 
