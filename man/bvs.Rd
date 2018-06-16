@@ -15,17 +15,21 @@ bvs(y, x, forced = NULL, family = c("gaussian", "binomial"),
 
 \item{x}{predictor design matrix}
 
-\item{forced}{(optional) \eqn{n x c} dimensional matrix of c confounding variables that one wishes to adjust the
-analysis for and that will be forced into every model}
+\item{forced}{(optional) \eqn{n x c} matrix of \emph{c} confounding variables that one wishes to adjust the
+analysis for and that will be forced into every model.}
 
-\item{family}{error distribution for outcome variable}
+\item{family}{specifies error distribution for outcome variable, options include
+\itemize{
+   \item "gaussian"
+   \item "binomial"
+}}
 
 \item{method}{specifies how to search the model space
 \itemize{
-   \item enumerate = compute and summarize all possible models in model space. Not recommended for problems where p > 20.
-   \item sample = performs basic basic Metropolis-Hastings algorithm to sample models from model space. For informative
+   \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
+   \item "sample": performs basic basic Metropolis-Hastings algorithm to sample models from model space. For informative
    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
-   covariates (alpha)
+   covariates (alpha).
 }}
 
 \item{rare}{if rare = TRUE, corresponds to the Bayesian Risk Index (BRI) algorithm of Quintana and Conti (2011) that constructs
@@ -35,7 +39,7 @@ based on the corresponding risk index.}
 \item{regions}{(optional) \eqn{p x 1} character or factor vector that identifies a user-defined region for each variant. If
 rare = TRUE, then multiple region-specific risk indices are computed for each model.}
 
-\item{prior_cov}{(optional) if method = "sample", a \eqn{p x q} matrix of q predictor-level covariates that the user
+\item{prior_cov}{(optional) if method = "sample", a \eqn{p x q} matrix of \emph{q} predictor-level covariates that the user
 wishes to incorporate into the estimation of the marginal inclusion probabilities using the iBMU algorithm.}
 
 \item{a1}{(optional) if method = "enumerate", a \eqn{q x 1} vector of specified effects of each predictor-level covariate.}
@@ -45,7 +49,7 @@ of each model is calculated based on the set of haplotypes.}
 
 \item{iter}{if method = "sample", the number of iterations to run the algorithm.}
 
-\item{save_iter}{the number of iterations between each checkpoint.  A checkpoint file is written
+\item{save_iter}{if method = "sample", the number of iterations between each checkpoint.  A checkpoint file is written
 every save.iter iterations}
 
 \item{outfile}{if method = "sample", character string giving the pathname of the checkpoint file to save the output of the algorithm.}

@@ -5,28 +5,32 @@ NULL
 #' Bayesian Variable Selection
 #' @param y outcome variable
 #' @param x predictor design matrix
-#' @param forced (optional) \eqn{n x c} dimensional matrix of c confounding variables that one wishes to adjust the
-#' analysis for and that will be forced into every model
-#' @param family error distribution for outcome variable
+#' @param forced (optional) \eqn{n x c} matrix of \emph{c} confounding variables that one wishes to adjust the
+#' analysis for and that will be forced into every model.
+#' @param family specifies error distribution for outcome variable, options include
+#' \itemize{
+#'    \item "gaussian"
+#'    \item "binomial"
+#' }
 #' @param method specifies how to search the model space
 #' \itemize{
-#'    \item enumerate = compute and summarize all possible models in model space. Not recommended for problems where p > 20.
-#'    \item sample = performs basic basic Metropolis-Hastings algorithm to sample models from model space. For informative
+#'    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
+#'    \item "sample": performs basic basic Metropolis-Hastings algorithm to sample models from model space. For informative
 #'    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
-#'    covariates (alpha)
+#'    covariates (alpha).
 #' }
 #' @param rare if rare = TRUE, corresponds to the Bayesian Risk Index (BRI) algorithm of Quintana and Conti (2011) that constructs
 #' a risk index based on the multiple rare variants within each model. The marginal likelihood of each model is then calculated
 #' based on the corresponding risk index.
 #' @param regions (optional) \eqn{p x 1} character or factor vector that identifies a user-defined region for each variant. If
 #' rare = TRUE, then multiple region-specific risk indices are computed for each model.
-#' @param prior_cov (optional) if method = "sample", a \eqn{p x q} matrix of q predictor-level covariates that the user
+#' @param prior_cov (optional) if method = "sample", a \eqn{p x q} matrix of \emph{q} predictor-level covariates that the user
 #' wishes to incorporate into the estimation of the marginal inclusion probabilities using the iBMU algorithm.
 #' @param a1 (optional) if method = "enumerate", a \eqn{q x 1} vector of specified effects of each predictor-level covariate.
 #' @param hap (not yet implemented) if hap = TRUE, esimtate a set of haplotypes from the multiple variants within each moel and the marginal likelihood
 #' of each model is calculated based on the set of haplotypes.
 #' @param iter if method = "sample", the number of iterations to run the algorithm.
-#' @param save_iter the number of iterations between each checkpoint.  A checkpoint file is written
+#' @param save_iter if method = "sample", the number of iterations between each checkpoint.  A checkpoint file is written
 #' every save.iter iterations
 #' @param outfile if method = "sample", character string giving the pathname of the checkpoint file to save the output of the algorithm.
 #' @param status_file if method = "sample", character string giving the pathname of the file to write the status of the algorithm.
