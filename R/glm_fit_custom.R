@@ -108,7 +108,7 @@ glm_fit_custom <- function (x,
             z <- compute_response(good, eta, y, mu, mu.eta.val)
             #w <- sqrt((weights[good] * mu.eta.val[good]^2) / variance(mu)[good])
             w <- sqrt(compute_weights(good, weights, mu.eta.val, mu) / varmu)
-            fit <- .Call(stats:::C_Cdqrls, x[good, , drop = FALSE] * w, z * w, min(1e-07, control$epsilon/1000), check = FALSE)
+            fit <- .Call("Cdqrls", x[good, , drop = FALSE] * w, z * w, min(1e-07, control$epsilon/1000), check = FALSE, package = "bvs")
             if (any(!is.finite(fit$coefficients))) {
                 conv <- FALSE
                 warning(gettextf("non-finite coefficients at iteration %d", iter), domain = NA)
