@@ -2,6 +2,8 @@ bvs: Bayesian Variable Selection
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+[![Build Status](https://travis-ci.org/USCbiostats/bvs.svg?branch=master)](https://travis-ci.org/USCbiostats/bvs) [![Build status](https://ci.appveyor.com/api/projects/status/6pw56o39laqjpx37?svg=true)](https://ci.appveyor.com/project/gmweaver/bvs)
+
 Introduction
 ============
 
