@@ -12,6 +12,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+[![Build Status](https://travis-ci.org/USCbiostats/bvs.svg?branch=master)](https://travis-ci.org/USCbiostats/bvs)
+
 # Introduction
 
 The functions in this package focus on analyzing case-control association studies involving a group of genetic variants. 
