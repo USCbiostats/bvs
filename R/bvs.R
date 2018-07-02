@@ -94,7 +94,7 @@ bvs <- function(y,
         stop(paste("Length of y (", y_len, ") not equal to number of rows of x (", n, ")", sep = ""))
     if (class(x) != "matrix")
         x <- as.matrix(x)
-    if (!(typeof(x) %in% c("double", "numeric")))
+    if (!(typeof(x) %in% c("double", "numeric", "integer")))
         stop("x contains non-numeric values")
 
     # check regions / rare
@@ -129,7 +129,7 @@ bvs <- function(y,
             stop(paste("Length of y (", y_len, ") not equal to number of rows of forced (", n_forced, ")", sep = ""))
         if (class(forced) != "matrix")
             forced <- as.matrix(forced)
-        if (!(typeof(forced) %in% c("double", "numeric")))
+        if (!(typeof(forced) %in% c("double", "numeric", "integer")))
             stop("forced contains non-numeric values")
     } else {
         p_forced <- 0
@@ -144,7 +144,7 @@ bvs <- function(y,
             stop(paste("Number of rows of prior_cov (", n_cov, ") not equal to number of columns of x (", p, ")", sep = ""))
         if (class(prior_cov) != "matrix")
             prior_cov <- as.matrix(prior_cov)
-        if (!(typeof(prior_cov) %in% c("double", "numeric")))
+        if (!(typeof(prior_cov) %in% c("double", "numeric", "integer")))
             stop("prior_cov contains non-numeric values")
     } else {
         inform <- FALSE
