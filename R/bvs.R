@@ -15,7 +15,7 @@ NULL
 #' @param method specifies how to search the model space
 #' \itemize{
 #'    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
-#'    \item "sample": performs basic basic Metropolis-Hastings algorithm to sample models from model space. For informative
+#'    \item "sample": performs basic Metropolis-Hastings algorithm to sample models from model space. For informative
 #'    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
 #'    covariates (alpha).
 #' }
@@ -31,12 +31,11 @@ NULL
 #' of each model is calculated based on the set of haplotypes.
 #' @param iter if method = "sample", the number of iterations to run the algorithm.
 #' @param save_iter if method = "sample", the number of iterations between each checkpoint.  A checkpoint file is written
-#' every save.iter iterations
+#' every save_iter iterations
 #' @param outfile if method = "sample", character string giving the pathname of the checkpoint file to save the output of the algorithm.
 #' @param status_file if method = "sample", character string giving the pathname of the file to write the status of the algorithm.
-#' @param old_results if method = "sample", old output from sampleBVS that has been run for a subset of the total number of
-#' iterations that the user wanted to run. if specified the sampling algorithm will start from the last sampled model in old.results.
-#' To be used if sampleBVS has been interrupted for some reason.
+#' @param old_results if method = "sample", old output from bvs that has been run for a subset of the total number of
+#' iterations that the user wanted to run. If specified, the sampling algorithm will start from the last sampled model in old_results.
 #' @param control specifies 'bvs' control object.
 #'
 #' @import stats haplo.stats
@@ -79,6 +78,9 @@ bvs <- function(y,
             y <- y != levels(y)[1L]
         if (any(y < 0 | y > 1))
             stop("y values must be 0 <= y <= 1")
+    } else {
+        if(!(typeof(y) %in% c("double", "numeric", "integer")))
+            stop("y must be numeric")
     }
 
     # check x and dim x/y
@@ -87,14 +89,14 @@ bvs <- function(y,
 
     y_len <- if (is.null(dim(y)))
                 length(y)
-            else
+             else
                 dim(y)[1]
 
     if (n != y_len)
         stop(paste("Length of y (", y_len, ") not equal to number of rows of x (", n, ")", sep = ""))
     if (class(x) != "matrix")
         x <- as.matrix(x)
-    if (!(typeof(x) %in% c("double", "numeric")))
+    if (!(typeof(x) %in% c("double", "numeric", "integer")))
         stop("x contains non-numeric values")
 
     # check regions / rare
@@ -129,7 +131,7 @@ bvs <- function(y,
             stop(paste("Length of y (", y_len, ") not equal to number of rows of forced (", n_forced, ")", sep = ""))
         if (class(forced) != "matrix")
             forced <- as.matrix(forced)
-        if (!(typeof(forced) %in% c("double", "numeric")))
+        if (!(typeof(forced) %in% c("double", "numeric", "integer")))
             stop("forced contains non-numeric values")
     } else {
         p_forced <- 0
@@ -144,7 +146,7 @@ bvs <- function(y,
             stop(paste("Number of rows of prior_cov (", n_cov, ") not equal to number of columns of x (", p, ")", sep = ""))
         if (class(prior_cov) != "matrix")
             prior_cov <- as.matrix(prior_cov)
-        if (!(typeof(prior_cov) %in% c("double", "numeric")))
+        if (!(typeof(prior_cov) %in% c("double", "numeric", "integer")))
             stop("prior_cov contains non-numeric values")
     } else {
         inform <- FALSE
@@ -182,7 +184,8 @@ bvs <- function(y,
         }
     }
 
-    fit$model_info <- list(nobs = n,
+    fit$model_info <- list(method = method,
+                           nobs = n,
                            nvars = p,
                            varnames = varnames,
                            rare = rare,

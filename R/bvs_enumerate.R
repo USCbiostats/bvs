@@ -36,6 +36,9 @@ bvs_enumerate <- function(x,
         mustart <- y
     }
 
+    # compute null deviance
+    null_dev <- sum(family_func$dev.resids(y, mean(y), weights))
+
     # setup external data
     if (inform) {
         a0 <- qnorm((1 - 2^(-1 / nrow(cov))))
@@ -49,6 +52,7 @@ bvs_enumerate <- function(x,
     fitness <- rep(NA, num_models)
     logPrM <- rep(NA, num_models)
     active <- apply(all_models, 2, function(x) paste(which(x), collapse = "-"))
+    active[1] <- "0"
     coef <- matrix(0, nrow = num_models, ncol = length(which_ind))
     alpha <- rep(a1, num_models)
 
@@ -112,5 +116,6 @@ bvs_enumerate <- function(x,
                     logPrM = logPrM,
                     model_path = 1:num_models,
                     alpha = alpha,
-                    models_accepted = models_accepted)
+                    models_accepted = models_accepted,
+                    null_dev = null_dev)
 }
