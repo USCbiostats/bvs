@@ -182,7 +182,8 @@ bvs <- function(y,
         }
     }
 
-    fit$model_info <- list(nobs = n,
+    fit$model_info <- list(method = method,
+                           nobs = n,
                            nvars = p,
                            varnames = varnames,
                            rare = rare,

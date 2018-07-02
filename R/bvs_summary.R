@@ -13,6 +13,12 @@
 summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
 {
 
+    # set burnin to zero if method is enumerate
+    if (object$model_info$method == "enumerate" && burnin > 0) {
+        burnin <- 0
+        warning("Note: 'burnin' automatically set to 0 when method = 'enumerate'")
+    }
+
     # check whether prior data needed
     if (object$model_info$inform && is.null(prior_cov)) {
         stop("Error: 'bvs' object has inform = TRUE, but prior_cov = NULL. Please provide prior data matrix.")
@@ -21,8 +27,10 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
     # subset trials based on burnin
     if (burnin > 0) {
         models_sub <- which(object$models_accepted$model_id %in% object$model_path[-c(1:burnin)])
+        a1 <- t(object$alpha[-c(1:burnin), , drop = FALSE])
     } else {
         models_sub <- 1:length(object$models_accepted$model_id)
+        a1 <- t(object$alpha)
     }
 
     # get unique values for all accepted models
@@ -32,7 +40,6 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
     coef <- t(object$models_accepted$coef[models_sub, , drop = FALSE])
     fitness <- object$fitness[match(models_id, object$model_path)]
     logPrM <- object$logPrM[match(models_id, object$model_path)]
-    a1 <- t(object$alpha[-c(1:burnin), , drop = FALSE])
 
     # parameters
     p <- object$model_info$nvars
