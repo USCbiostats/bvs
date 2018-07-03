@@ -73,6 +73,7 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
         lprob.ninc = log(1 - prior.marg)
         null.prob.ninc = pnorm(0, mean = a0, lower.tail = TRUE, log.p = TRUE)
         null.prior.marg = 1 - exp(null.prob.ninc)
+
         # Global Priors
         prior.null = exp(sum(lprob.ninc))
         prior.alt = 1 - prior.null

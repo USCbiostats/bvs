@@ -50,10 +50,14 @@ bvs_fit <- function(z,
                                            control = control))
 
     fit$num_vars <- num_vars
-    if (rare && !all(nonnull_col)) {
-        coef <- rep(0.0, num_regions)
-        coef[nonnull_col] <- fit$coef
-        fit$coef <- coef
+    if (num_vars > 0) {
+        if (rare) {
+            coef <- rep(0.0, num_regions)
+            coef[nonnull_col] <- fit$coef[1:num_vars]
+            fit$coef <- coef
+        } else {
+            fit$coef <- fit$coef[1:num_vars]
+        }
     }
     return(fit)
 }

@@ -83,11 +83,11 @@ bvs_enumerate <- function(x,
                            m = m)
 
         # get coef vector
-        if (num_active > 0) {
+        if (fit_glm$num_vars > 0) {
             if (rare) {
-                coef[i, which_ind] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+                coef[i, which_ind] <- fit_glm$coef
             } else {
-                coef[i, z_current] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+                coef[i, z_current] <- fit_glm$coef
             }
         }
 
