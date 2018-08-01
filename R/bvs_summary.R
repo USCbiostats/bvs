@@ -5,7 +5,7 @@
 #'  the individual genes of interest (if specified) and the individual variants of interest.
 #'
 #' @param object an object of class 'bvs'
-#' @param burnin number of burn-in interations
+#' @param burnin number of burn-in interations. Automatically set to zero if 'enumerate' method used.
 #' @param prior_cov matrix of predictor-level prior covariates (required only if used in original model fit)
 #' @param ... additional arguments as required by summary S3 object
 
@@ -16,7 +16,6 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
     # set burnin to zero if method is enumerate
     if (object$model_info$method == "enumerate" && burnin > 0) {
         burnin <- 0
-        warning("Note: 'burnin' automatically set to 0 when method = 'enumerate'")
     }
 
     # check whether prior data needed

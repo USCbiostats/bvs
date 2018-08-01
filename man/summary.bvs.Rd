@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{an object of class 'bvs'}
 
-\item{burnin}{number of burn-in interations}
+\item{burnin}{number of burn-in interations. Automatically set to zero if 'enumerate' method used.}
 
 \item{prior_cov}{matrix of predictor-level prior covariates (required only if used in original model fit)}
 
