@@ -46,6 +46,10 @@ bvs_sample <- function(x,
                                family = family_func,
                                control = control)$dev
 
+    # initialize unordered map to hold all unique previous models
+    models_fit <- new_table(1)
+    iter <- iter + 1 # remove when done testing
+
     # initialize results objects
     fitness <- rep(NA, iter)
     logPrM <- rep(NA, iter)
@@ -54,9 +58,6 @@ bvs_sample <- function(x,
     active <- rep(NA, iter)
     coef <- matrix(0, nrow = iter, ncol = length(which_ind))
     ll <- rep(NA, iter)
-
-    # initialize unordered map to hold all unique previous models
-    models_fit <- new_table(1)
 
     # initialize vector that indicates currently active variables
     z_current <- rep(FALSE, p)
@@ -146,7 +147,7 @@ bvs_sample <- function(x,
             lprob_ninc <- pnorm(0, mean = mu, lower.tail = TRUE, log.p = TRUE)
             logPrM_current <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
 
-            # calculate new fitness | a1
+            # calculate new fitness | a1 for currently selected model
             fitness_current <- fitness_current + logPrM[i - 1] - logPrM_current
         }
 
@@ -215,7 +216,7 @@ bvs_sample <- function(x,
         # calculate fitness = ll - logPrM
         fitness_new <- ll[model_propose] - logPrM_new
 
-        #If fit ratio > runif(1), accept new model and z, else keep old results
+        #If fit ratio > runif(1), accept new model and z, else keep current model
         accept <- runif(1) <= min(1, 1 / exp(fitness_new - fitness_current))
         if (accept) {
             model_path[i] <- model_propose
