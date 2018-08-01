@@ -125,9 +125,9 @@ bvs_sample <- function(x,
     fitness[1] <- fitness_current <- ll[1] - logPrM_current
 
     # loop through all trials, track progress with progress bar
-    pb <- txtProgressBar(min = i, max = iter, style = 3)
     i <- 2
     idx <- 2
+    pb <- txtProgressBar(min = i, max = iter, style = 3)
 
     while (i <= iter) {
         # sample new a1 if using prior or keep a1 = 0
