@@ -4,10 +4,10 @@
 \alias{bvs}
 \title{Bayesian Variable Selection}
 \usage{
-bvs(y, x, forced = NULL, family = c("gaussian", "binomial"),
-  method = c("enumerate", "sample"), rare = FALSE, regions = NULL,
-  prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000, save_iter = 0,
-  outfile = NULL, status_file = NULL, old_results = NULL,
+bvs(y, x, forced = NULL, intercept = TRUE, family = c("gaussian",
+  "binomial"), method = c("enumerate", "sample"), rare = FALSE,
+  regions = NULL, prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000,
+  save_iter = 0, outfile = NULL, status_file = NULL, old_results = NULL,
   control = list())
 }
 \arguments{
@@ -18,6 +18,8 @@ bvs(y, x, forced = NULL, family = c("gaussian", "binomial"),
 \item{forced}{(optional) \eqn{n x c} matrix of \emph{c} confounding variables that one wishes to adjust the
 analysis for and that will be forced into every model.}
 
+\item{intercept}{indicates whether model should include an intercept in all models. Default is TRUE.}
+
 \item{family}{specifies error distribution for outcome variable, options include
 \itemize{
    \item "gaussian"
@@ -27,7 +29,7 @@ analysis for and that will be forced into every model.}
 \item{method}{specifies how to search the model space
 \itemize{
    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
-   \item "sample": performs basic basic Metropolis-Hastings algorithm to sample models from model space. For informative
+   \item "sample": performs basic Metropolis-Hastings algorithm to sample models from model space. For informative
    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
    covariates (alpha).
 }}

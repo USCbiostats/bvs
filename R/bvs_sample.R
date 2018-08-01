@@ -3,6 +3,7 @@ bvs_sample <- function(x,
                        y,
                        n,
                        p,
+                       intercept,
                        family,
                        rare,
                        hap,
@@ -20,7 +21,7 @@ bvs_sample <- function(x,
                        old_results)
 {
 
-    # initialize parameters
+    # initialize glm parameters
     control <- do.call("glm.control", list())
     family_func <- do.call(family, list())
     weights <- rep(1.0, n)
@@ -35,12 +36,18 @@ bvs_sample <- function(x,
         family_func$mu.eta <- identity_mu_eta
         mustart <- y
     }
-    if (inform) {
-        a0 <- qnorm(1 - 2^(-1 / p))
-    }
 
     # compute null deviance
-    null_dev <- sum(family_func$dev.resids(y, mean(y), weights))
+    null_dev <- glm_fit_custom(x = forced,
+                               y = y,
+                               nobs = n,
+                               nvars = intercept + p_forced,
+                               weights = weights,
+                               mustart = mustart,
+                               m = m,
+                               offset = offset,
+                               family = family_func,
+                               control = control)$dev
 
     # check if old results present
     if (length(old_results) > 0) {
@@ -83,6 +90,7 @@ bvs_sample <- function(x,
                        x = x,
                        n = n,
                        p = p,
+                       intercept = intercept,
                        rare = rare,
                        hap = hap,
                        region_ind = region_ind,
@@ -110,6 +118,7 @@ bvs_sample <- function(x,
 
     # calculate prior on model
     if (inform) {
+        a0 <- qnorm(1 - 2^(-1 / p))
         v_hat <- solve(diag(1, p_cov) + crossprod(cov))
         mu <- a0 + cov %*% a1_current
         lprob_inc <- pnorm(0, mean = mu, lower.tail = FALSE, log.p = TRUE)
@@ -178,6 +187,7 @@ bvs_sample <- function(x,
                                x = x,
                                n = n,
                                p = p,
+                               intercept = intercept,
                                rare = rare,
                                hap = hap,
                                region_ind = region_ind,

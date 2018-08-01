@@ -7,6 +7,7 @@ NULL
 #' @param x predictor design matrix
 #' @param forced (optional) \eqn{n x c} matrix of \emph{c} confounding variables that one wishes to adjust the
 #' analysis for and that will be forced into every model.
+#' @param intercept indicates whether model should include an intercept in all models. Default is TRUE.
 #' @param family specifies error distribution for outcome variable, options include
 #' \itemize{
 #'    \item "gaussian"
@@ -15,7 +16,7 @@ NULL
 #' @param method specifies how to search the model space
 #' \itemize{
 #'    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
-#'    \item "sample": performs basic basic Metropolis-Hastings algorithm to sample models from model space. For informative
+#'    \item "sample": performs basic Metropolis-Hastings algorithm to sample models from model space. For informative
 #'    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
 #'    covariates (alpha).
 #' }
@@ -48,6 +49,7 @@ NULL
 bvs <- function(y,
                 x,
                 forced = NULL,
+                intercept = TRUE,
                 family = c("gaussian", "binomial"),
                 method = c("enumerate", "sample"),
                 rare = FALSE,
@@ -74,6 +76,8 @@ bvs <- function(y,
 
     # check y
     y <- drop(y)
+    if (length(dim(y)) > 1)
+        stop("dim(y) is greater than 1, y should be a vector")
     if (family == "binomial") {
         if (is.factor(y))
             y <- y != levels(y)[1L]
@@ -85,10 +89,7 @@ bvs <- function(y,
     n <- nrow(x)
     p <- ncol(x)
 
-    y_len <- if (is.null(dim(y)))
-                length(y)
-            else
-                dim(y)[1]
+    y_len <- length(y)
 
     if (n != y_len)
         stop(paste("Length of y (", y_len, ") not equal to number of rows of x (", n, ")", sep = ""))
@@ -121,7 +122,7 @@ bvs <- function(y,
         which_ind <- 1:p
     }
 
-    # check forced
+    # check forced + intercept
     if (!is.null(forced)) {
         n_forced <- nrow(forced)
         p_forced <- ncol(forced)
@@ -131,8 +132,14 @@ bvs <- function(y,
             forced <- as.matrix(forced)
         if (!(typeof(forced) %in% c("double", "numeric", "integer")))
             stop("forced contains non-numeric values")
+        if (intercept) {
+            forced <- cbind(1, forced)
+        }
     } else {
         p_forced <- 0
+        if (intercept) {
+            forced <- matrix(1, nrow = n, ncol = 1)
+        }
     }
 
     # check prior_cov
@@ -153,10 +160,10 @@ bvs <- function(y,
 
     # fit models by enumerating all combinations or M-H
     fit <- switch(method,
-                  enumerate = bvs_enumerate(x, y, n, p, family, rare, hap, region_ind, forced,
+                  enumerate = bvs_enumerate(x, y, n, p, intercept, family, rare, hap, region_ind, forced,
                                             p_forced, inform, prior_cov, p_cov, a1, which_ind),
 
-                  sample = bvs_sample(x, y, n, p, family, rare, hap, region_ind, num_regions, forced,
+                  sample = bvs_sample(x, y, n, p, intercept, family, rare, hap, region_ind, num_regions, forced,
                                       p_forced, inform, prior_cov, p_cov, which_ind, iter, save_iter,
                                       status_file, old_results)
     )
@@ -185,6 +192,7 @@ bvs <- function(y,
     fit$model_info <- list(method = method,
                            nobs = n,
                            nvars = p,
+                           intercept = intercept,
                            varnames = varnames,
                            rare = rare,
                            regions = regions,

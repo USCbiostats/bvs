@@ -4,6 +4,7 @@ bvs_fit <- function(z,
                     x,
                     n,
                     p,
+                    intercept,
                     rare,
                     hap,
                     region_ind,
@@ -38,17 +39,16 @@ bvs_fit <- function(z,
     }
 
     # Fit glm
-    fit <- suppressWarnings(glm_fit_custom(x = cbind(rep(1, n), data.i, forced),
+    fit <- suppressWarnings(glm_fit_custom(x = cbind(data.i, forced),
                                            y = y,
                                            nobs = n,
-                                           nvars = 1 + num_vars + p_forced,
+                                           nvars = num_vars + intercept + p_forced,
                                            weights = weights,
                                            mustart = mustart,
                                            m = m,
                                            offset = offset,
                                            family = family_func,
                                            control = control))
-
     fit$num_vars <- num_vars
     if (num_vars > 0) {
         if (rare) {

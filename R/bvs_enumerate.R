@@ -3,6 +3,7 @@ bvs_enumerate <- function(x,
                           y,
                           n,
                           p,
+                          intercept,
                           family,
                           rare,
                           hap,
@@ -20,7 +21,7 @@ bvs_enumerate <- function(x,
     num_models <- 2^p
     all_models <- t(expand.grid(lapply(vector("list", p), function(v) {c(FALSE, TRUE)})))
 
-    # setup glm parameters
+    # initialize glm parameters
     control <- do.call("glm.control", list())
     family_func <- do.call(family, list())
     weights <- rep(1.0, n)
@@ -37,7 +38,16 @@ bvs_enumerate <- function(x,
     }
 
     # compute null deviance
-    null_dev <- sum(family_func$dev.resids(y, mean(y), weights))
+    null_dev <- glm_fit_custom(x = forced,
+                               y = y,
+                               nobs = n,
+                               nvars = intercept + p_forced,
+                               weights = weights,
+                               mustart = mustart,
+                               m = m,
+                               offset = offset,
+                               family = family_func,
+                               control = control)$dev
 
     # setup external data
     if (inform) {
@@ -70,6 +80,7 @@ bvs_enumerate <- function(x,
                            x = x,
                            n = n,
                            p = p,
+                           intercept = intercept,
                            rare = rare,
                            hap = hap,
                            region_ind = region_ind,

@@ -59,8 +59,9 @@ glm_fit_custom <- function (x,
         if (!validmu(mu))
             stop("invalid fitted means in empty model", call. = FALSE)
         dev <- sum(dev.resids(y, mu, weights))
-        w <- sqrt((weights * mu.eta(eta)^2)/variance(mu))
-        residuals <- (y - mu)/mu.eta(eta)
+        mu.eta(eta, mu.eta.val)
+        w <- sqrt((weights * mu.eta.val^2)/variance(mu))
+        residuals <- (y - mu)/mu.eta.val
         good <- rep_len(TRUE, length(residuals))
         boundary <- conv <- TRUE
         coef <- numeric()
@@ -95,7 +96,6 @@ glm_fit_custom <- function (x,
             if (any(varmu == 0))
                 stop("0s in V(mu)")
             mu.eta(eta, mu.eta.val)
-            #logit_mu_eta(eta, mu.eta.val)
             if (any(is.na(mu.eta.val[good])))
                 stop("NAs in d(mu)/d(eta)")
             good <- pos_wgt & (mu.eta.val != 0)
@@ -234,7 +234,7 @@ glm_fit_custom <- function (x,
     #else fit$rank
     #resdf <- n.ok - rank
     #aic.model <- aic(y, n, mu, weights, dev) + 2 * rank
-    list(coef = coef[-1],
+    list(coef = coef,
          #residuals = residuals,
          #fitted.values = mu,
          #effects = if (!EMPTY) fit$effects,
