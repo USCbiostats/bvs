@@ -31,13 +31,6 @@ NULL
 #' @param hap (not yet implemented) if hap = TRUE, esimtate a set of haplotypes from the multiple variants within each moel and the marginal likelihood
 #' of each model is calculated based on the set of haplotypes.
 #' @param iter if method = "sample", the number of iterations to run the algorithm.
-#' @param save_iter if method = "sample", the number of iterations between each checkpoint.  A checkpoint file is written
-#' every save.iter iterations
-#' @param outfile if method = "sample", character string giving the pathname of the checkpoint file to save the output of the algorithm.
-#' @param status_file if method = "sample", character string giving the pathname of the file to write the status of the algorithm.
-#' @param old_results if method = "sample", old output from sampleBVS that has been run for a subset of the total number of
-#' iterations that the user wanted to run. if specified the sampling algorithm will start from the last sampled model in old.results.
-#' To be used if sampleBVS has been interrupted for some reason.
 #' @param control specifies 'bvs' control object.
 #'
 #' @import stats haplo.stats
@@ -58,10 +51,6 @@ bvs <- function(y,
                 a1 = 0,
                 hap = FALSE,
                 iter = 10000,
-                save_iter = 0,
-                outfile = NULL,
-                status_file = NULL,
-                old_results = NULL,
                 control = list())
 {
 
@@ -88,7 +77,6 @@ bvs <- function(y,
     # check x and dim x/y
     n <- nrow(x)
     p <- ncol(x)
-
     y_len <- length(y)
 
     if (n != y_len)
@@ -164,8 +152,7 @@ bvs <- function(y,
                                             p_forced, inform, prior_cov, p_cov, a1, which_ind),
 
                   sample = bvs_sample(x, y, n, p, intercept, family, rare, hap, region_ind, num_regions, forced,
-                                      p_forced, inform, prior_cov, p_cov, which_ind, iter, save_iter,
-                                      status_file, old_results)
+                                      p_forced, inform, prior_cov, p_cov, which_ind, iter)
     )
 
     # add name attributes

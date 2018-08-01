@@ -15,10 +15,7 @@ bvs_sample <- function(x,
                        cov,
                        p_cov,
                        which_ind,
-                       iter,
-                       outfile,
-                       status_file,
-                       old_results)
+                       iter)
 {
 
     # initialize glm parameters
@@ -49,37 +46,24 @@ bvs_sample <- function(x,
                                family = family_func,
                                control = control)$dev
 
-    # check if old results present
-    if (length(old_results) > 0) {
-        iter <- iter - ncol(old_results)
-    } else {
-        iter <- iter + 1
-        z_current <- rep(FALSE, p)
-        z_current[sample(1:p, 5)] <- TRUE
-        if (inform) {
-            a1_current <- rep(0, p_cov)
-        }
-    }
-
     # initialize results objects
-    model_path <- c(1, rep(NA, iter - 1))
-    coef <- matrix(0, nrow = iter, ncol = length(which_ind))
-    ll <- rep(NA, iter)
     fitness <- rep(NA, iter)
     logPrM <- rep(NA, iter)
+    model_path <- c(1, rep(NA, iter - 1))
     alpha <- matrix(0, nrow = iter, ncol = max(1, p_cov))
     active <- rep(NA, iter)
+    coef <- matrix(0, nrow = iter, ncol = length(which_ind))
+    ll <- rep(NA, iter)
 
     # initialize unordered map to hold all unique previous models
     models_fit <- new_table(1)
-    set_element_in_table(active[1] <- paste0(which(z_current), collapse = "-"), 1, models_fit)
 
-    # calculate current fitness
-    lower <- rep(0, p)
-    upper <- rep(Inf, p)
-    lower[!z_current] <- -Inf
-    upper[!z_current] <- 0
-    t_current <- rtnorm(p, lower = lower, upper = upper)
+    # initialize vector that indicates currently active variables
+    z_current <- rep(FALSE, p)
+    z_current[sample(1:p, 5)] <- TRUE
+    set_element_in_table(key = active[1] <- paste0(which(z_current), collapse = "-"),
+                         value = 1,
+                         table = models_fit)
 
     # fit initial model
     num_active <- sum(z_current)
@@ -115,6 +99,13 @@ bvs_sample <- function(x,
 
     # compute log likelihood
     ll[1] <- 0.5 * fit_glm$deviance + fit_glm$num_vars
+
+    # initialize t_current
+    lower <- rep(0, p)
+    upper <- rep(Inf, p)
+    lower[!z_current] <- -Inf
+    upper[!z_current] <- 0
+    t_current <- rtnorm(p, lower = lower, upper = upper)
 
     # calculate prior on model
     if (inform) {
