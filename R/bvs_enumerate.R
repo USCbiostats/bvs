@@ -42,13 +42,13 @@ bvs_enumerate <- function(x,
                                y = y,
                                nobs = n,
                                nvars = intercept + p_forced,
+                               family = family_func,
+                               control = control,
                                weights = weights,
                                mustart = mustart,
                                m = m,
-                               offset = offset,
-                               family = family_func,
-                               control = control)$dev
-
+                               offset = offset)$dev
+  
     # setup external data
     if (inform) {
         a0 <- qnorm((1 - 2^(-1 / nrow(cov))))

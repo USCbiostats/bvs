@@ -39,14 +39,14 @@ bvs_sample <- function(x,
                                y = y,
                                nobs = n,
                                nvars = intercept + p_forced,
+                               family = family_func,
+                               control = control,
                                weights = weights,
                                mustart = mustart,
                                m = m,
-                               offset = offset,
-                               family = family_func,
-                               control = control)$dev
+                               offset = offset)$dev
 
-    # initialize unordered map to hold all unique previous models
+    # initialize hash table to hold indices of all unique previous models
     models_fit <- new_table(1)
     iter <- iter + 1 # remove when done testing
 
@@ -112,6 +112,7 @@ bvs_sample <- function(x,
     if (inform) {
         a0 <- qnorm(1 - 2^(-1 / p))
         v_hat <- solve(diag(1, p_cov) + crossprod(cov))
+        a1_current <- rep(0, p_cov)
         mu <- a0 + cov %*% a1_current
         lprob_inc <- pnorm(0, mean = mu, lower.tail = FALSE, log.p = TRUE)
         lprob_ninc <- pnorm(0, mean = mu, lower.tail = TRUE, log.p = TRUE)
@@ -123,8 +124,8 @@ bvs_sample <- function(x,
     # calculate fitness = ll - logPrM
     fitness[1] <- fitness_current <- ll[1] - logPrM_current
 
-    # loop through all trials
-    pb <- txtProgressBar(min = 2, max = iter, style = 3)
+    # loop through all trials, track progress with progress bar
+    pb <- txtProgressBar(min = i, max = iter, style = 3)
     i <- 2
     idx <- 2
 
@@ -233,17 +234,17 @@ bvs_sample <- function(x,
             alpha[i, ] <- a1_current
         }
 
-        i <- i + 1
         # Update progress
+        i <- i + 1
         setTxtProgressBar(pb, i)
     }
     cat("\nDone\n")
 
     models_chosen <- unique(model_path)
     models_accepted <- list(model_id = models_chosen,
-                           active = active[models_chosen],
-                           ll = ll[models_chosen],
-                           coef = coef[models_chosen, , drop = FALSE])
+                            active = active[models_chosen],
+                            ll = ll[models_chosen],
+                            coef = coef[models_chosen, , drop = FALSE])
 
     results <- list(fitness = fitness,
                     logPrM = logPrM,

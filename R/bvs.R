@@ -72,6 +72,9 @@ bvs <- function(y,
             y <- y != levels(y)[1L]
         if (any(y < 0 | y > 1))
             stop("y values must be 0 <= y <= 1")
+    } else {
+        if(!(typeof(y) %in% c("double", "integer")))
+            stop("y must be numeric")
     }
 
     # check x and dim x/y
@@ -118,7 +121,8 @@ bvs <- function(y,
             stop(paste("Length of y (", y_len, ") not equal to number of rows of forced (", n_forced, ")", sep = ""))
         if (class(forced) != "matrix")
             forced <- as.matrix(forced)
-        if (!(typeof(forced) %in% c("double", "numeric", "integer")))
+
+        if (!(typeof(forced) %in% c("double", "integer")))
             stop("forced contains non-numeric values")
         if (intercept) {
             forced <- cbind(1, forced)
@@ -139,7 +143,7 @@ bvs <- function(y,
             stop(paste("Number of rows of prior_cov (", n_cov, ") not equal to number of columns of x (", p, ")", sep = ""))
         if (class(prior_cov) != "matrix")
             prior_cov <- as.matrix(prior_cov)
-        if (!(typeof(prior_cov) %in% c("double", "numeric", "integer")))
+        if (!(typeof(prior_cov) %in% c("double", "integer")))
             stop("prior_cov contains non-numeric values")
     } else {
         inform <- FALSE
@@ -189,7 +193,6 @@ bvs <- function(y,
                            hap = hap,
                            null_dev = fit$null_dev)
     fit$null_dev <- NULL
-    fit$model.info
     class(fit) <- "bvs"
     return(fit)
 }

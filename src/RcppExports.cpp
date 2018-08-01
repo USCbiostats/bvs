@@ -117,6 +117,8 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP Cdqrls(SEXP, SEXP, SEXP, SEXP, SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
     {"_bvs_compute_response", (DL_FUNC) &_bvs_compute_response, 5},
     {"_bvs_compute_weights", (DL_FUNC) &_bvs_compute_weights, 4},
@@ -127,6 +129,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bvs_new_table", (DL_FUNC) &_bvs_new_table, 1},
     {"_bvs_set_element_in_table", (DL_FUNC) &_bvs_set_element_in_table, 3},
     {"_bvs_get_element_from_table", (DL_FUNC) &_bvs_get_element_from_table, 2},
+    {"Cdqrls",                      (DL_FUNC) &Cdqrls,                      5},
     {NULL, NULL, 0}
 };
 

@@ -24,8 +24,8 @@ bvs_fit <- function(z,
         if (num_active > 0) {
             region_z <- region_ind * z
             nonnull_col <- colSums(region_z) > 0
-            data.i <- x %*% region_z[, nonnull_col]
             num_vars <- sum(nonnull_col)
+            data.i <- x %*% region_z[, nonnull_col]
         } else {
             data.i <- NULL
             nonnull_col <- rep(FALSE, num_regions)
