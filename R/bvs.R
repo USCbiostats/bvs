@@ -65,6 +65,8 @@ bvs <- function(y,
 
     # check y
     y <- drop(y)
+    if (length(dim(y)) > 1)
+        stop("dim(y) is greater than 1, y should be a vector")
     if (family == "binomial") {
         if (is.factor(y))
             y <- y != levels(y)[1L]
@@ -84,7 +86,7 @@ bvs <- function(y,
         stop(paste("Length of y (", y_len, ") not equal to number of rows of x (", n, ")", sep = ""))
     if (class(x) != "matrix")
         x <- as.matrix(x)
-    if (!(typeof(x) %in% c("double", "integer")))
+    if (!(typeof(x) %in% c("double", "numeric", "integer")))
         stop("x contains non-numeric values")
 
     # check regions / rare
@@ -111,7 +113,7 @@ bvs <- function(y,
         which_ind <- 1:p
     }
 
-    # check forced
+    # check forced + intercept
     if (!is.null(forced)) {
         n_forced <- nrow(forced)
         p_forced <- ncol(forced)
@@ -119,6 +121,7 @@ bvs <- function(y,
             stop(paste("Length of y (", y_len, ") not equal to number of rows of forced (", n_forced, ")", sep = ""))
         if (class(forced) != "matrix")
             forced <- as.matrix(forced)
+
         if (!(typeof(forced) %in% c("double", "integer")))
             stop("forced contains non-numeric values")
         if (intercept) {
@@ -126,7 +129,9 @@ bvs <- function(y,
         }
     } else {
         p_forced <- 0
-        forced <- matrix(1, nrow = n, ncol = 1)
+        if (intercept) {
+            forced <- matrix(1, nrow = n, ncol = 1)
+        }
     }
 
     # check prior_cov

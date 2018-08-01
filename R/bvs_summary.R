@@ -5,7 +5,7 @@
 #'  the individual genes of interest (if specified) and the individual variants of interest.
 #'
 #' @param object an object of class 'bvs'
-#' @param burnin number of burn-in interations
+#' @param burnin number of burn-in interations. Automatically set to zero if 'enumerate' method used.
 #' @param prior_cov matrix of predictor-level prior covariates (required only if used in original model fit)
 #' @param ... additional arguments as required by summary S3 object
 
@@ -72,6 +72,7 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
         lprob.ninc = log(1 - prior.marg)
         null.prob.ninc = pnorm(0, mean = a0, lower.tail = TRUE, log.p = TRUE)
         null.prior.marg = 1 - exp(null.prob.ninc)
+
         # Global Priors
         prior.null = exp(sum(lprob.ninc))
         prior.alt = 1 - prior.null

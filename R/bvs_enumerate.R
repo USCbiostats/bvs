@@ -21,7 +21,7 @@ bvs_enumerate <- function(x,
     num_models <- 2^p
     all_models <- t(expand.grid(lapply(vector("list", p), function(v) {c(FALSE, TRUE)})))
 
-    # setup glm parameters
+    # initialize glm parameters
     control <- do.call("glm.control", list())
     family_func <- do.call(family, list())
     weights <- rep(1.0, n)
@@ -48,7 +48,7 @@ bvs_enumerate <- function(x,
                                mustart = mustart,
                                m = m,
                                offset = offset)$dev
-
+  
     # setup external data
     if (inform) {
         a0 <- qnorm((1 - 2^(-1 / nrow(cov))))

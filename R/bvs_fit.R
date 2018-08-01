@@ -49,7 +49,6 @@ bvs_fit <- function(z,
                                            offset = offset,
                                            family = family_func,
                                            control = control))
-
     fit$num_vars <- num_vars
     if (num_vars > 0) {
         if (rare) {

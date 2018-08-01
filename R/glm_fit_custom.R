@@ -95,7 +95,6 @@ glm_fit_custom <- function (x,
             if (any(varmu == 0))
                 stop("0s in V(mu)")
             mu.eta(eta, mu.eta.val)
-            #logit_mu_eta(eta, mu.eta.val)
             if (any(is.na(mu.eta.val[good])))
                 stop("NAs in d(mu)/d(eta)")
             good <- pos_wgt & (mu.eta.val != 0)
