@@ -3,6 +3,7 @@ bvs_enumerate <- function(x,
                           y,
                           n,
                           p,
+                          intercept,
                           family,
                           rare,
                           hap,
@@ -37,7 +38,16 @@ bvs_enumerate <- function(x,
     }
 
     # compute null deviance
-    null_dev <- sum(family_func$dev.resids(y, mean(y), weights))
+    null_dev <- glm_fit_custom(x = forced,
+                               y = y,
+                               nobs = n,
+                               nvars = intercept + p_forced,
+                               family = family_func,
+                               control = control,
+                               weights = weights,
+                               mustart = mustart,
+                               m = m,
+                               offset = offset)$dev
 
     # setup external data
     if (inform) {
@@ -70,6 +80,7 @@ bvs_enumerate <- function(x,
                            x = x,
                            n = n,
                            p = p,
+                           intercept = intercept,
                            rare = rare,
                            hap = hap,
                            region_ind = region_ind,
@@ -83,11 +94,11 @@ bvs_enumerate <- function(x,
                            m = m)
 
         # get coef vector
-        if (num_active > 0) {
+        if (fit_glm$num_vars > 0) {
             if (rare) {
-                coef[i, which_ind] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+                coef[i, which_ind] <- fit_glm$coef
             } else {
-                coef[i, z_current] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+                coef[i, z_current] <- fit_glm$coef
             }
         }
 

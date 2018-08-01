@@ -3,6 +3,7 @@ bvs_sample <- function(x,
                        y,
                        n,
                        p,
+                       intercept,
                        family,
                        rare,
                        hap,
@@ -14,10 +15,7 @@ bvs_sample <- function(x,
                        cov,
                        p_cov,
                        which_ind,
-                       iter,
-                       outfile,
-                       status_file,
-                       old_results)
+                       iter)
 {
 
     # initialize glm parameters
@@ -43,122 +41,95 @@ bvs_sample <- function(x,
     }
 
     # compute null deviance
-    null_dev <- sum(family_func$dev.resids(y, mean(y), weights))
+    null_dev <- glm_fit_custom(x = forced,
+                               y = y,
+                               nobs = n,
+                               nvars = intercept + p_forced,
+                               family = family_func,
+                               control = control,
+                               weights = weights,
+                               mustart = mustart,
+                               m = m,
+                               offset = offset)$dev
 
     # initialize hash table to hold indices of all unique previous models
     models_fit <- new_table(1)
 
-    # check if old results present
-    if (!is.null(old_results)) {
+    iter <- iter + 1 # remove when done testing
 
-        # load previous results
-        num_iter_old <- length(old_results$fitness)
-        i <- iter - num_iter_old + 1
-        model_path <- c(old_results$model_path, rep(NA, iter - num_iter_old))
-        active <- rep(NA, iter)
-        active[old_results$models_accepted$model_id] <- old_results$models_accepted$active
-        ll <- rep(NA, iter)
-        ll[old_results$models_accepted$model_id] <- old_results$models_accepted$ll
-        coef <- matrix(0, nrow = iter, ncol = length(which_ind))
-        coef[old_results$models_accepted$model_id, ] <- old_results$models_accepted$coef
+    # intialize objects to hold results
+    fitness <- rep(NA, iter)
+    logPrM <- rep(NA, iter)
+    model_path <- c(1, rep(NA, iter - 1))
+    alpha <- matrix(0, nrow = iter, ncol = max(1, p_cov))
+    active <- rep(NA, iter)
+    coef <- matrix(0, nrow = iter, ncol = length(which_ind))
+    ll <- rep(NA, iter)
 
-        # add indices holding results of previously accepted models to hash table
-        for (i in 1:length(old_results$models_accepted$active)) {
-            set_element_in_table(key = old_results$models_accepted$active[i],
-                                 value = old_results$models_accepted$model_id[i],
-                                 table = models_fit)
-        }
+    # initialize vector that indicates currently active variables
+    z_current <- rep(FALSE, p)
+    z_current[sample(1:p, 5)] <- TRUE
+    set_element_in_table(key = active[1] <- paste0(which(z_current), collapse = "-"),
+                         value = 1,
+                         table = models_fit)
 
-        # set current fitness, active variables (z), logPrM, a1
-        fitness_current <- old_results$fitness[num_iter_old]
-        logPrM_current <- old_results$logPrM[num_iter_old]
-        z_current <- rep(FALSE, p)
-        z_current[as.numeric(strsplit(old_results$models_accepted$active[old_results$model_path[num_iter_old]], "-")[[1]])] <- TRUE
-        a1_current <- old_results$alpha[num_iter_old]
+    # fit initial model
+    num_active <- sum(z_current)
 
-        # initialize t_current
-        lower <- rep(0, p)
-        upper <- rep(Inf, p)
-        lower[!z_current] <- -Inf
-        upper[!z_current] <- 0
-        t_current <- rtnorm(p, lower = lower, upper = upper)
-    } else {
-        iter <- iter + 1 # remove when done testing
+    fit_glm <- bvs_fit(z = z_current,
+                       num_active = num_active,
+                       y = y,
+                       x = x,
+                       n = n,
+                       p = p,
+                       intercept = intercept,
+                       rare = rare,
+                       hap = hap,
+                       region_ind = region_ind,
+                       num_regions = num_regions,
+                       forced = forced,
+                       p_forced = p_forced,
+                       family_func = family_func,
+                       control = control,
+                       weights = weights,
+                       offset = offset,
+                       mustart = mustart,
+                       m = m)
 
-        # intialize objects to hold results
-        fitness <- rep(NA, iter)
-        logPrM <- rep(NA, iter)
-        model_path <- c(1, rep(NA, iter - 1))
-        alpha <- matrix(0, nrow = iter, ncol = max(1, p_cov))
-        active <- rep(NA, iter)
-        coef <- matrix(0, nrow = iter, ncol = length(which_ind))
-        ll <- rep(NA, iter)
-
-        # initialize vector that indicates currently active variables
-        z_current <- rep(FALSE, p)
-        z_current[sample(1:p, 5)] <- TRUE
-        set_element_in_table(key = active[1] <- paste0(which(z_current), collapse = "-"),
-                             value = 1,
-                             table = models_fit)
-
-        # fit initial model
-        num_active <- sum(z_current)
-
-        fit_glm <- bvs_fit(z = z_current,
-                           num_active = num_active,
-                           y = y,
-                           x = x,
-                           n = n,
-                           p = p,
-                           rare = rare,
-                           hap = hap,
-                           region_ind = region_ind,
-                           num_regions = num_regions,
-                           forced = forced,
-                           p_forced = p_forced,
-                           family_func = family_func,
-                           control = control,
-                           weights = weights,
-                           offset = offset,
-                           mustart = mustart,
-                           m = m)
-
-        # get intial coef vector
+    # get intial coef vector
+    if (fit_glm$num_vars > 0) {
         if (rare) {
-            coef[1, which_ind] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+            coef[1, which_ind] <- fit_glm$coef
         } else {
-            coef[1, z_current] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+            coef[1, z_current] <- fit_glm$coef
         }
-
-        # compute log likelihood
-        ll[1] <- 0.5 * fit_glm$deviance + fit_glm$num_vars
-
-        # initialize t_current and a1_current
-        lower <- rep(0, p)
-        upper <- rep(Inf, p)
-        lower[!z_current] <- -Inf
-        upper[!z_current] <- 0
-        t_current <- rtnorm(p, lower = lower, upper = upper)
-
-        if (inform) {
-            a1_current <- rep(0, p_cov)
-        }
-
-        # calculate prior on model
-        if (inform) {
-            mu <- a0 + cov %*% a1_current
-            lprob_inc <- pnorm(0, mean = mu, lower.tail = FALSE, log.p = TRUE)
-            lprob_ninc <- pnorm(0, mean = mu, lower.tail = TRUE, log.p = TRUE)
-            logPrM[1] <- logPrM_current <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
-        } else {
-            logPrM[1] <- logPrM_current <- BetaBinomial(p = p, pgamma = num_active)
-        }
-
-        # calculate fitness = ll - logPrM
-        fitness[1] <- fitness_current <- ll[1] - logPrM_current
-        i <- 2
-        idx <- 2
     }
+
+    # compute log likelihood
+    ll[1] <- 0.5 * fit_glm$deviance + fit_glm$num_vars
+
+    # initialize t_current
+    lower <- rep(0, p)
+    upper <- rep(Inf, p)
+    lower[!z_current] <- -Inf
+    upper[!z_current] <- 0
+    t_current <- rtnorm(p, lower = lower, upper = upper)
+
+    # calculate prior on model
+    if (inform) {
+        a1_current <- rep(0, p_cov)
+        mu <- a0 + cov %*% a1_current
+        lprob_inc <- pnorm(0, mean = mu, lower.tail = FALSE, log.p = TRUE)
+        lprob_ninc <- pnorm(0, mean = mu, lower.tail = TRUE, log.p = TRUE)
+        logPrM[1] <- logPrM_current <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
+    } else {
+        logPrM[1] <- logPrM_current <- BetaBinomial(p = p, pgamma = num_active)
+    }
+
+    # calculate fitness = ll - logPrM
+    fitness[1] <- fitness_current <- ll[1] - logPrM_current
+    i <- 2
+    idx <- 2
 
     # loop through all trials, track progress with progress bar
     pb <- txtProgressBar(min = i, max = iter, style = 3)
@@ -214,6 +185,7 @@ bvs_sample <- function(x,
                                x = x,
                                n = n,
                                p = p,
+                               intercept = intercept,
                                rare = rare,
                                hap = hap,
                                region_ind = region_ind,
@@ -228,11 +200,11 @@ bvs_sample <- function(x,
                                m = m)
 
             # get coef vector
-            if (num_active > 0) {
+            if (fit_glm$num_vars > 0) {
                 if (rare) {
-                    coef[idx, which_ind] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+                    coef[idx, which_ind] <- fit_glm$coef
                 } else {
-                    coef[idx, z_current] <- fit_glm$coef[1:(length(fit_glm$coef) - p_forced)]
+                    coef[idx, z_current] <- fit_glm$coef
                 }
             }
             # compute log-likelihood
@@ -275,9 +247,9 @@ bvs_sample <- function(x,
 
     models_chosen <- unique(model_path)
     models_accepted <- list(model_id = models_chosen,
-                           active = active[models_chosen],
-                           ll = ll[models_chosen],
-                           coef = coef[models_chosen, , drop = FALSE])
+                            active = active[models_chosen],
+                            ll = ll[models_chosen],
+                            coef = coef[models_chosen, , drop = FALSE])
 
     results <- list(fitness = fitness,
                     logPrM = logPrM,

@@ -4,10 +4,9 @@
 \alias{bvs}
 \title{Bayesian Variable Selection}
 \usage{
-bvs(y, x, forced = NULL, family = c("gaussian", "binomial"),
-  method = c("enumerate", "sample"), rare = FALSE, regions = NULL,
-  prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000, save_iter = 0,
-  outfile = NULL, status_file = NULL, old_results = NULL,
+bvs(y, x, forced = NULL, intercept = TRUE, family = c("gaussian",
+  "binomial"), method = c("enumerate", "sample"), rare = FALSE,
+  regions = NULL, prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000,
   control = list())
 }
 \arguments{
@@ -18,6 +17,8 @@ bvs(y, x, forced = NULL, family = c("gaussian", "binomial"),
 \item{forced}{(optional) \eqn{n x c} matrix of \emph{c} confounding variables that one wishes to adjust the
 analysis for and that will be forced into every model.}
 
+\item{intercept}{indicates whether model should include an intercept in all models. Default is TRUE.}
+
 \item{family}{specifies error distribution for outcome variable, options include
 \itemize{
    \item "gaussian"
@@ -27,7 +28,7 @@ analysis for and that will be forced into every model.}
 \item{method}{specifies how to search the model space
 \itemize{
    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
-   \item "sample": performs basic basic Metropolis-Hastings algorithm to sample models from model space. For informative
+   \item "sample": performs basic Metropolis-Hastings algorithm to sample models from model space. For informative
    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
    covariates (alpha).
 }}
@@ -48,17 +49,6 @@ wishes to incorporate into the estimation of the marginal inclusion probabilitie
 of each model is calculated based on the set of haplotypes.}
 
 \item{iter}{if method = "sample", the number of iterations to run the algorithm.}
-
-\item{save_iter}{if method = "sample", the number of iterations between each checkpoint.  A checkpoint file is written
-every save.iter iterations}
-
-\item{outfile}{if method = "sample", character string giving the pathname of the checkpoint file to save the output of the algorithm.}
-
-\item{status_file}{if method = "sample", character string giving the pathname of the file to write the status of the algorithm.}
-
-\item{old_results}{if method = "sample", old output from sampleBVS that has been run for a subset of the total number of
-iterations that the user wanted to run. if specified the sampling algorithm will start from the last sampled model in old.results.
-To be used if sampleBVS has been interrupted for some reason.}
 
 \item{control}{specifies 'bvs' control object.}
 }

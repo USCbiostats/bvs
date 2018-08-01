@@ -4,6 +4,7 @@ bvs_fit <- function(z,
                     x,
                     n,
                     p,
+                    intercept,
                     rare,
                     hap,
                     region_ind,
@@ -23,8 +24,8 @@ bvs_fit <- function(z,
         if (num_active > 0) {
             region_z <- region_ind * z
             nonnull_col <- colSums(region_z) > 0
-            data.i <- x %*% region_z[, nonnull_col]
             num_vars <- sum(nonnull_col)
+            data.i <- x %*% region_z[, nonnull_col]
         } else {
             data.i <- NULL
             nonnull_col <- rep(FALSE, num_regions)
@@ -38,10 +39,10 @@ bvs_fit <- function(z,
     }
 
     # Fit glm
-    fit <- suppressWarnings(glm_fit_custom(x = cbind(rep(1, n), data.i, forced),
+    fit <- suppressWarnings(glm_fit_custom(x = cbind(data.i, forced),
                                            y = y,
                                            nobs = n,
-                                           nvars = 1 + num_vars + p_forced,
+                                           nvars = num_vars + intercept + p_forced,
                                            weights = weights,
                                            mustart = mustart,
                                            m = m,
@@ -50,10 +51,14 @@ bvs_fit <- function(z,
                                            control = control))
 
     fit$num_vars <- num_vars
-    if (rare && !all(nonnull_col)) {
-        coef <- rep(0.0, num_regions)
-        coef[nonnull_col] <- fit$coef
-        fit$coef <- coef
+    if (num_vars > 0) {
+        if (rare) {
+            coef <- rep(0.0, num_regions)
+            coef[nonnull_col] <- fit$coef[1:num_vars]
+            fit$coef <- coef
+        } else {
+            fit$coef <- fit$coef[1:num_vars]
+        }
     }
     return(fit)
 }

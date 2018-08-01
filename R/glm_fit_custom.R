@@ -53,14 +53,14 @@ glm_fit_custom <- function (x,
     if (EMPTY) {
         eta <- rep.int(0, nobs) + offset
         if (!valideta(eta))
-            stop("invalid linear predictor values in empty model",
-                 call. = FALSE)
+            stop("invalid linear predictor values in empty model", call. = FALSE)
         mu <- linkinv(eta)
         if (!validmu(mu))
             stop("invalid fitted means in empty model", call. = FALSE)
         dev <- sum(dev.resids(y, mu, weights))
-        w <- sqrt((weights * mu.eta(eta)^2)/variance(mu))
-        residuals <- (y - mu)/mu.eta(eta)
+        mu.eta(eta, mu.eta.val)
+        w <- sqrt((weights * mu.eta.val^2)/variance(mu))
+        residuals <- (y - mu)/mu.eta.val
         good <- rep_len(TRUE, length(residuals))
         boundary <- conv <- TRUE
         coef <- numeric()
@@ -234,7 +234,7 @@ glm_fit_custom <- function (x,
     #else fit$rank
     #resdf <- n.ok - rank
     #aic.model <- aic(y, n, mu, weights, dev) + 2 * rank
-    list(coef = coef[-1],
+    list(coef = coef,
          #residuals = residuals,
          #fitted.values = mu,
          #effects = if (!EMPTY) fit$effects,

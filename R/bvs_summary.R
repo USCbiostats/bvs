@@ -16,7 +16,6 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
     # set burnin to zero if method is enumerate
     if (object$model_info$method == "enumerate" && burnin > 0) {
         burnin <- 0
-        warning("Note: 'burnin' automatically set to 0 when method = 'enumerate'")
     }
 
     # check whether prior data needed
