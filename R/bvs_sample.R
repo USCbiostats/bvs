@@ -34,12 +34,6 @@ bvs_sample <- function(x,
         mustart <- y
     }
 
-    # compute a0, v_hat if inform = TRUE
-    if (inform) {
-        a0 <- qnorm(1 - 2^(-1 / p))
-        v_hat <- solve(diag(1, p_cov) + crossprod(cov))
-    }
-
     # compute null deviance
     null_dev <- glm_fit_custom(x = forced,
                                y = y,
@@ -54,7 +48,6 @@ bvs_sample <- function(x,
 
     # initialize hash table to hold indices of all unique previous models
     models_fit <- new_table(1)
-
     iter <- iter + 1 # remove when done testing
 
     # intialize objects to hold results
@@ -117,6 +110,8 @@ bvs_sample <- function(x,
 
     # calculate prior on model
     if (inform) {
+        a0 <- qnorm(1 - 2^(-1 / p))
+        v_hat <- solve(diag(1, p_cov) + crossprod(cov))
         a1_current <- rep(0, p_cov)
         mu <- a0 + cov %*% a1_current
         lprob_inc <- pnorm(0, mean = mu, lower.tail = FALSE, log.p = TRUE)
@@ -128,11 +123,11 @@ bvs_sample <- function(x,
 
     # calculate fitness = ll - logPrM
     fitness[1] <- fitness_current <- ll[1] - logPrM_current
-    i <- 2
-    idx <- 2
 
     # loop through all trials, track progress with progress bar
     pb <- txtProgressBar(min = i, max = iter, style = 3)
+    i <- 2
+    idx <- 2
 
     while (i <= iter) {
         # sample new a1 if using prior or keep a1 = 0
