@@ -7,18 +7,32 @@ NULL
 #' @param x predictor design matrix
 #' @param forced (optional) \eqn{n x c} matrix of \emph{c} confounding variables that one wishes to adjust the
 #' analysis for and that will be forced into every model.
-#' @param intercept indicates whether model should include an intercept in all models. Default is TRUE.
+#' @param intercept indicates whether models should include an intercept. Default = TRUE.
 #' @param family specifies error distribution for outcome variable, options include
 #' \itemize{
-#'    \item "gaussian"
+#'    \item "gaussian" (default)
 #'    \item "binomial"
 #' }
 #' @param method specifies how to search the model space
 #' \itemize{
-#'    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
-#'    \item "sample": performs basic Metropolis-Hastings algorithm to sample models from model space. For informative
+#'    \item "sample" (default) : performs basic Metropolis-Hastings algorithm to sample models from model space. For informative
 #'    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
 #'    covariates (alpha).
+#'    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
+#' }
+#' @param prior_coef (optional) specifies prior for regression coefficients (only for use when family = "gaussian").
+#' \itemize{
+#'    \item "none" (default)
+#'    \item "gprior": To specify the parameters for the g-prior, pass a list object with the following elements
+#'    \itemize{
+#'    \item "gprior"
+#'    \item \eqn{g} = numeric value for sparsity parameter, recommended default = \eqn{max(n, p^2)}
+#'    \item \eqn{alpha} = numeric value that specifies variance in g-prior, recommended default = 0.01
+#'    \item \eqn{beta} = numeric value that specifies variance in g-prior, recommended default = 0.01
+#'    }
+#'    To use the default values, pass the string "default" for any parameter.
+#'
+#'    Example: \code{list("gprior", "default", 0.02, 0.02)}
 #' }
 #' @param rare if rare = TRUE, corresponds to the Bayesian Risk Index (BRI) algorithm of Quintana and Conti (2011) that constructs
 #' a risk index based on the multiple rare variants within each model. The marginal likelihood of each model is then calculated
@@ -44,7 +58,8 @@ bvs <- function(y,
                 forced = NULL,
                 intercept = TRUE,
                 family = c("gaussian", "binomial"),
-                method = c("enumerate", "sample"),
+                method = c("sample", "enumerate"),
+                prior_coef = list("none"),
                 rare = FALSE,
                 regions = NULL,
                 prior_cov = NULL,
@@ -88,6 +103,30 @@ bvs <- function(y,
         x <- as.matrix(x)
     if (!(typeof(x) %in% c("double", "numeric", "integer")))
         stop("x contains non-numeric values")
+
+    # check prior (coef)
+    if (prior_coef[[1]] == "gprior") {
+        if (length(prior_coef) != 4) {
+            stop(paste("number of arguments (", length(prior_coef), ") for gprior not correct"))
+        }
+        if (prior_coef[[2]] == "default") {
+            prior_coef[[2]] <- max(n, p^2)
+        } else if (prior_coef[[2]] < 0) {
+            stop("g must be nonnegative")
+        }
+        if (prior_coef[[3]] == "default") {
+            prior_coef[[3]] <- 0.01
+        } else if (prior_coef[[3]] < 0) {
+            stop("alpha must be nonnegative")
+        }
+        if (prior_coef[[4]] == "default") {
+            prior_coef[[4]] <- 0.01
+        } else if (prior_coef[[4]] < 0) {
+            stop("beta must be nonnegative")
+        }
+    } else if (prior_coef[[1]] != "none") {
+        stop("prior_coef argument not recognized")
+    }
 
     # check regions / rare
     if (!is.null(regions)) {
@@ -152,11 +191,13 @@ bvs <- function(y,
 
     # fit models by enumerating all combinations or M-H
     fit <- switch(method,
-                  enumerate = bvs_enumerate(x, y, n, p, intercept, family, rare, hap, region_ind, forced,
-                                            p_forced, inform, prior_cov, p_cov, a1, which_ind),
+                  enumerate = bvs_enumerate(x, y, n, p, intercept, family, prior_coef,
+                                            rare, hap, region_ind, forced, p_forced,
+                                            inform, prior_cov, p_cov, a1, which_ind),
 
-                  sample = bvs_sample(x, y, n, p, intercept, family, rare, hap, region_ind, num_regions, forced,
-                                      p_forced, inform, prior_cov, p_cov, which_ind, iter)
+                  sample = bvs_sample(x, y, n, p, intercept, family, prior_coef, rare,
+                                      hap, region_ind, num_regions, forced, p_forced,
+                                      inform, prior_cov, p_cov, which_ind, iter)
     )
 
     # add name attributes
@@ -181,6 +222,7 @@ bvs <- function(y,
     }
 
     fit$model_info <- list(method = method,
+                           prior_coef = prior_coef,
                            nobs = n,
                            nvars = p,
                            intercept = intercept,
@@ -191,8 +233,8 @@ bvs <- function(y,
                            inform = inform,
                            nvars_prior = p_cov,
                            hap = hap,
-                           null_dev = fit$null_dev)
-    fit$null_dev <- NULL
+                           nullLogLike = fit$nullLogLike)
+    fit$nullLogLike <- NULL
     class(fit) <- "bvs"
     return(fit)
 }

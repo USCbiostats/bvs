@@ -144,20 +144,16 @@ glm_fit_custom <- function (x,
                 }
                 boundary <- TRUE
                 if (control$trace)
-                    cat("Step halved: new deviance = ", dev, "\n",
-                        sep = "")
+                    cat("Step halved: new deviance = ", dev, "\n", sep = "")
             }
             if (!(valideta(eta) && validmu(mu))) {
                 if (is.null(coefold))
-                    stop("no valid set of coefficients has been found: please supply starting values",
-                         call. = FALSE)
-                warning("step size truncated: out of bounds",
-                        call. = FALSE)
+                    stop("no valid set of coefficients has been found: please supply starting values", call. = FALSE)
+                warning("step size truncated: out of bounds", call. = FALSE)
                 ii <- 1
                 while (!(valideta(eta) && validmu(mu))) {
                     if (ii > control$maxit)
-                        stop("inner loop 2; cannot correct step size",
-                             call. = FALSE)
+                        stop("inner loop 2; cannot correct step size", call. = FALSE)
                     ii <- ii + 1
                     start <- (start + coefold)/2
                     eta <- drop(x %*% start)
@@ -166,8 +162,7 @@ glm_fit_custom <- function (x,
                 boundary <- TRUE
                 dev <- sum(dev.resids(y, mu, weights))
                 if (control$trace)
-                    cat("Step halved: new deviance = ", dev, "\n",
-                        sep = "")
+                    cat("Step halved: new deviance = ", dev, "\n", sep = "")
             }
             if (abs(dev - devold)/(0.1 + abs(dev)) < control$epsilon) {
                 conv <- TRUE
@@ -182,18 +177,15 @@ glm_fit_custom <- function (x,
         if (!conv)
             warning("glm.fit: algorithm did not converge", call. = FALSE)
         if (boundary)
-            warning("glm.fit: algorithm stopped at boundary value",
-                    call. = FALSE)
+            warning("glm.fit: algorithm stopped at boundary value", call. = FALSE)
         eps <- 10 * .Machine$double.eps
         if (family$family == "binomial") {
             if (any(mu > 1 - eps) || any(mu < eps))
-                warning("glm.fit: fitted probabilities numerically 0 or 1 occurred",
-                        call. = FALSE)
+                warning("glm.fit: fitted probabilities numerically 0 or 1 occurred", call. = FALSE)
         }
         if (family$family == "poisson") {
             if (any(mu < eps))
-                warning("glm.fit: fitted rates numerically 0 occurred",
-                        call. = FALSE)
+                warning("glm.fit: fitted rates numerically 0 occurred", call. = FALSE)
         }
         if (fit$rank < nvars)
             coef[fit$pivot][seq.int(fit$rank + 1, nvars)] <- NA
@@ -232,7 +224,7 @@ glm_fit_custom <- function (x,
     #    0
     #else fit$rank
     #resdf <- n.ok - rank
-    #aic.model <- aic(y, n, mu, weights, dev) + 2 * rank
+    #aic.model <- family$aic(y, nobs, mu, weights, dev) + 2 * rank
     list(coef = coef,
          #residuals = residuals,
          #fitted.values = mu,
@@ -242,7 +234,7 @@ glm_fit_custom <- function (x,
          #qr = if (!EMPTY) structure(fit[c("qr", "rank", "qraux", "pivot", "tol")], class = "qr"),
          #family = family,
          #eta = eta,
-         deviance = dev,
+         deviance = dev
          #aic = aic.model,
          #null.deviance = nulldev,
          #iter = iter,
@@ -251,6 +243,6 @@ glm_fit_custom <- function (x,
          #df.residual = resdf,
          #df.null = nulldf,
          #y = y,
-         #converged = conv,
-         boundary = boundary)
+         #converged = conv
+         )
 }

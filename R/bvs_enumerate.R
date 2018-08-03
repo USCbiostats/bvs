@@ -1,10 +1,10 @@
-
 bvs_enumerate <- function(x,
                           y,
                           n,
                           p,
                           intercept,
                           family,
+                          prior_coef,
                           rare,
                           hap,
                           region_ind,
@@ -37,18 +37,27 @@ bvs_enumerate <- function(x,
         mustart <- y
     }
 
-    # compute null deviance
-    null_dev <- glm_fit_custom(x = forced,
-                               y = y,
-                               nobs = n,
-                               nvars = intercept + p_forced,
-                               family = family_func,
-                               control = control,
-                               weights = weights,
-                               mustart = mustart,
-                               m = m,
-                               offset = offset)$dev
-  
+    # compute null marginal log like
+    nullLogLike <- bvs_fit(z = NULL,
+                           num_active = 0L,
+                           y = y,
+                           x = NULL,
+                           n = n,
+                           p = p,
+                           intercept = intercept,
+                           rare = rare,
+                           hap = hap,
+                           region_ind = region_ind,
+                           forced = forced,
+                           p_forced = p_forced,
+                           family_func = family_func,
+                           prior_coef = prior_coef,
+                           control = control,
+                           weights = weights,
+                           offset = offset,
+                           mustart = mustart,
+                           m = m)$marg_ll
+
     # setup external data
     if (inform) {
         a0 <- qnorm((1 - 2^(-1 / nrow(cov))))
@@ -58,11 +67,13 @@ bvs_enumerate <- function(x,
     }
 
     # initialize objects to hold results
-    ll <- rep(NA, num_models)
-    fitness <- rep(NA, num_models)
+    loglike <- rep(NA, num_models)
+    logfitness <- rep(NA, num_models)
     logPrM <- rep(NA, num_models)
     active <- apply(all_models, 2, function(x) paste(which(x), collapse = "-"))
+    num_active <- rep(NA, num_models)
     active[1] <- "0"
+    num_active[1] <- 0
     coef <- matrix(0, nrow = num_models, ncol = length(which_ind))
     alpha <- rep(a1, num_models)
 
@@ -71,11 +82,11 @@ bvs_enumerate <- function(x,
 
         # get active variables
         z_current <- all_models[, i, drop = FALSE]
-        num_active <- sum(z_current)
+        num_active[i] <- sum(z_current)
 
         # fit model
         fit_glm <- bvs_fit(z = z_current,
-                           num_active = num_active,
+                           num_active = num_active[i],
                            y = y,
                            x = x,
                            n = n,
@@ -87,6 +98,7 @@ bvs_enumerate <- function(x,
                            forced = forced,
                            p_forced = p_forced,
                            family_func = family_func,
+                           prior_coef = prior_coef,
                            control = control,
                            weights = weights,
                            offset = offset,
@@ -102,8 +114,8 @@ bvs_enumerate <- function(x,
             }
         }
 
-        # compute log-likelihood
-        ll[i] <- 0.5 * fit_glm$deviance + fit_glm$num_vars
+        # get marginal log-likelihood
+        loglike[i] <- fit_glm$marg_ll
 
         # calculate prior on model
         # If inform ==TRUE use probit specification
@@ -111,22 +123,24 @@ bvs_enumerate <- function(x,
         if (inform) {
             logPrM[i] <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
         } else {
-            logPrM[i] <- BetaBinomial(p = p, pgamma = num_active)
+            logPrM[i] <- logBetaBinomial(p = p, pgamma = num_active[i])
         }
 
-        # calculate fitness = ll - logPrM
-        fitness[i] <- ll[i] - logPrM[i]
+        # calculate logfitness = loglike - logPrM
+        logfitness[i] <- loglike[i] + logPrM[i]
     }
 
+    rownames(coef) <- 1:num_models
     models_accepted <- list(model_id = 1:num_models,
                             active = active,
-                            ll = ll,
+                            num_active = num_active,
+                            loglike = loglike,
                             coef = coef)
 
-    results <- list(fitness = fitness,
+    results <- list(logfitness = logfitness,
                     logPrM = logPrM,
                     model_path = 1:num_models,
                     alpha = alpha,
                     models_accepted = models_accepted,
-                    null_dev = null_dev)
+                    nullLogLike = nullLogLike)
 }

@@ -20,7 +20,7 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
 
     # check whether prior data needed
     if (object$model_info$inform && is.null(prior_cov)) {
-        stop("Error: 'bvs' object has inform = TRUE, but prior_cov = NULL. Please provide prior data matrix.")
+        stop("'bvs' object has inform = TRUE, but prior_cov = NULL. Please provide prior data matrix.")
     }
 
     # subset trials based on burnin
@@ -35,9 +35,9 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
     # get unique values for all accepted models
     models_id <- object$models_accepted$model_id[models_sub]
     active <- object$models_accepted$active[models_sub]
-    ll <- object$models_accepted$ll[models_sub]
+    loglike <- object$models_accepted$loglike[models_sub]
     coef <- t(object$models_accepted$coef[models_sub, , drop = FALSE])
-    fitness <- object$fitness[match(models_id, object$model_path)]
+    logfitness <- object$logfitness[match(models_id, object$model_path)]
     logPrM <- object$logPrM[match(models_id, object$model_path)]
 
     # parameters
@@ -54,10 +54,10 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
         if (object$model_info$inform) {
             logPrM <- c(sum(pnorm(0, mean = rep(a0, p), lower.tail = TRUE, log.p = TRUE)), logPrM)
         } else {
-            logPrM <- c(BetaBinomial(p = p, pgamma = 0), logPrM)
+            logPrM <- c(logBetaBinomial(p = p, pgamma = 0), logPrM)
         }
-        ll <- c(object$model_info$null_dev / 2, ll)
-        fitness <- c(ll[1] - logPrM[1], fitness)
+        loglike <- c(0.5 * object$model_info$null_dev, loglike)
+        logfitness <- c(object$model_info$nullLogLike + logPrM[1], logfitness)
         null_ind <- 1
     }
 
@@ -90,13 +90,13 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
 
     if (object$model_info$inform) {
         new_lPrM <- apply(active_mat, 1, function(x) {sum(lprob.inc[x == 1]) + sum(lprob.ninc[x == 0])})
-        fitness <- ll - new_lPrM
+        logfitness <- loglike + new_lPrM
     } else {
         new_lPrM <- logPrM
     }
 
     # Calculate Posterior model probabilities
-    PrMgivenD <- exp(-fitness + min(fitness)) / sum(exp(-fitness + min(fitness)))
+    PrMgivenD <- exp(logfitness - min(logfitness)) / sum(exp(logfitness - min(logfitness)))
 
     ##Global Posterior Prob & BF
     post.null <- PrMgivenD[null_ind]
