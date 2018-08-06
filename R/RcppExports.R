@@ -5,8 +5,8 @@ compute_response <- function(good, eta, y, mu, mu_eta_val) {
     .Call(`_bvs_compute_response`, good, eta, y, mu, mu_eta_val)
 }
 
-compute_weights <- function(good, weights, mu_eta_val, mu) {
-    .Call(`_bvs_compute_weights`, good, weights, mu_eta_val, mu)
+compute_weights <- function(good, weights, mu_eta_val, mu, varmu) {
+    .Call(`_bvs_compute_weights`, good, weights, mu_eta_val, mu, varmu)
 }
 
 identity_mu_eta <- function(eta, eta_val) {

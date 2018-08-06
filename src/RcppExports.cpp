@@ -22,8 +22,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // compute_weights
-NumericVector compute_weights(const LogicalVector& good, const NumericVector& weights, const NumericVector& mu_eta_val, const NumericVector& mu);
-RcppExport SEXP _bvs_compute_weights(SEXP goodSEXP, SEXP weightsSEXP, SEXP mu_eta_valSEXP, SEXP muSEXP) {
+NumericVector compute_weights(const LogicalVector& good, const NumericVector& weights, const NumericVector& mu_eta_val, const NumericVector& mu, const NumericVector& varmu);
+RcppExport SEXP _bvs_compute_weights(SEXP goodSEXP, SEXP weightsSEXP, SEXP mu_eta_valSEXP, SEXP muSEXP, SEXP varmuSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -31,7 +31,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const NumericVector& >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type mu_eta_val(mu_eta_valSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_weights(good, weights, mu_eta_val, mu));
+    Rcpp::traits::input_parameter< const NumericVector& >::type varmu(varmuSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_weights(good, weights, mu_eta_val, mu, varmu));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -121,7 +122,7 @@ RcppExport SEXP Cdqrls(SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bvs_compute_response", (DL_FUNC) &_bvs_compute_response, 5},
-    {"_bvs_compute_weights", (DL_FUNC) &_bvs_compute_weights, 4},
+    {"_bvs_compute_weights", (DL_FUNC) &_bvs_compute_weights, 5},
     {"_bvs_identity_mu_eta", (DL_FUNC) &_bvs_identity_mu_eta, 2},
     {"_bvs_logit_mu_eta", (DL_FUNC) &_bvs_logit_mu_eta, 2},
     {"_bvs_logit_deviance", (DL_FUNC) &_bvs_logit_deviance, 3},

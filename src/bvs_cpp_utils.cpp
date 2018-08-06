@@ -28,11 +28,12 @@ NumericVector compute_response(const LogicalVector & good,
 NumericVector compute_weights(const LogicalVector & good,
                               const NumericVector & weights,
                               const NumericVector & mu_eta_val,
-                              const NumericVector & mu) {
+                              const NumericVector & mu,
+                              const NumericVector & varmu) {
     NumericVector wgt(sum(good));
     for (int i = 0; i < good.length(); ++i) {
         if (good[i]) {
-            wgt[i] = weights[i] * mu_eta_val[i] * mu_eta_val[i];
+            wgt[i] = sqrt((weights[i] * mu_eta_val[i] * mu_eta_val[i]) / varmu[i]);
         }
     }
     return wgt;

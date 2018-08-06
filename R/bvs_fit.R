@@ -70,11 +70,19 @@ bvs_fit <- function(z,
 
     # compute marginal log-likelihood
     if (prior_coef[[1]] == "gprior") {
-        if (intercept + p_forced + num_vars > 0) {
-            s_temp <- crossprod(y) - (prior_coef[[2]] / (1 + prior_coef[[2]])) * crossprod(y, xgamma) %*% solve(crossprod(xgamma)) %*% crossprod(xgamma, y)
+        if (p_forced + num_vars > 0) {
+            if (intercept){
+                s_temp <- crossprod(y - mean(y)) - (prior_coef[[2]] / (1 + prior_coef[[2]])) * crossprod(y - mean(y), xgamma) %*% solve(crossprod(xgamma)) %*% crossprod(xgamma, y - mean(y))
+            } else {
+                s_temp <- crossprod(y) - (prior_coef[[2]] / (1 + prior_coef[[2]])) * crossprod(y, xgamma) %*% solve(crossprod(xgamma)) %*% crossprod(xgamma, y)
+            }
             fit$marg_ll <- -(0.5 * num_vars) * log(prior_coef[[2]] + 1) - 0.5 * (2 * prior_coef[[3]] + n - 1) * log(2 * prior_coef[[4]] + s_temp)
         } else {
-            fit$marg_ll <- - 0.5 * (2 * prior_coef[[3]] + n - 1) * log(2 * prior_coef[[4]] + crossprod(y))
+            if (intercept) {
+                fit$marg_ll <- - 0.5 * (2 * prior_coef[[3]] + n - 1) * log(2 * prior_coef[[4]] + crossprod(y - mean(y)))
+            } else {
+                fit$marg_ll <- - 0.5 * (2 * prior_coef[[3]] + n - 1) * log(2 * prior_coef[[4]] + crossprod(y))
+            }
         }
     } else {
         fit$marg_ll <- -(0.5 * fit$deviance + num_vars)

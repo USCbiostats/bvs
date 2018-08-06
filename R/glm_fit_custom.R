@@ -95,6 +95,7 @@ glm_fit_custom <- function (x,
             if (any(varmu == 0))
                 stop("0s in V(mu)")
             mu.eta(eta, mu.eta.val)
+            #mu.eta.val <- mu.eta(eta)
             if (any(is.na(mu.eta.val[good])))
                 stop("NAs in d(mu)/d(eta)")
             good <- pos_wgt & (mu.eta.val != 0)
@@ -106,7 +107,7 @@ glm_fit_custom <- function (x,
             #z <- (eta - offset)[good] + (y - mu)[good] / mu.eta.val[good]
             z <- compute_response(good, eta, y, mu, mu.eta.val)
             #w <- sqrt((weights[good] * mu.eta.val[good]^2) / variance(mu)[good])
-            w <- sqrt(compute_weights(good, weights, mu.eta.val, mu) / varmu)
+            w <- compute_weights(good, weights, mu.eta.val, mu, varmu)
             fit <- .Call("Cdqrls", x[good, , drop = FALSE] * w, z * w, min(1e-07, control$epsilon/1000), check = FALSE, package = "bvs")
             if (any(!is.finite(fit$coefficients))) {
                 conv <- FALSE
