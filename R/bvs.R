@@ -57,7 +57,6 @@ NULL
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @importFrom MASS mvrnorm
 #' @importFrom msm rtnorm
-#' @importFrom TailRank dbb
 
 #' @export
 bvs <- function(y,
@@ -113,13 +112,11 @@ bvs <- function(y,
         stop("x contains non-numeric values")
 
     # check prior(model) if using sample
-    if (method == "sample") {
-        if (prior_model[[1]] < 0.0) {
-            stop("alpha must be > 0")
-        }
-        if (prior_model[[2]] < 0.0) {
-            stop("beta must be > 0")
-        }
+    if (prior_model[[1]] < 0.0) {
+        stop("alpha must be > 0")
+    }
+    if (prior_model[[2]] < 0.0) {
+        stop("beta must be > 0")
     }
 
     # check prior(coef)
@@ -209,7 +206,7 @@ bvs <- function(y,
 
     # fit models by enumerating all combinations or M-H
     fit <- switch(method,
-                  enumerate = bvs_enumerate(x, y, n, p, intercept, family, prior_coef,
+                  enumerate = bvs_enumerate(x, y, n, p, intercept, family, prior_model, prior_coef,
                                             rare, hap, region_ind, forced, p_forced,
                                             inform, prior_cov, p_cov, a1, which_ind),
 

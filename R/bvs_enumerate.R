@@ -4,6 +4,7 @@ bvs_enumerate <- function(x,
                           p,
                           intercept,
                           family,
+                          prior_model,
                           prior_coef,
                           rare,
                           hap,
@@ -36,6 +37,10 @@ bvs_enumerate <- function(x,
         family_func$mu.eta <- identity_mu_eta
         mustart <- y
     }
+
+    # initialize model size beta-binomial parameters
+    alpha_bb <- prior_model[[1]]
+    beta_bb <- prior_model[[2]]
 
     # compute null marginal log like
     nullLogLike <- bvs_fit(z = NULL,
@@ -123,7 +128,7 @@ bvs_enumerate <- function(x,
         if (inform) {
             logPrM[i] <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
         } else {
-            logPrM[i] <- logBetaBinomial(p = p, pgamma = num_active[i])
+            logPrM[i] <- logBetaBinomial(num_active[i], p, alpha_bb, beta_bb) - log(choose(p, num_active[i]))
         }
 
         # calculate logfitness = loglike - logPrM

@@ -135,7 +135,7 @@ bvs_sample <- function(x,
         logPrM[1] <- logPrM_current <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
     } else {
         #logPrM[1] <- logPrM_current <- logBetaBinomial(p = p, pgamma = num_active[1])
-        logPrM[1] <- logPrM_current <- dbb(x = num_active[1], N = p, u = alpha_bb, v = beta_bb, log = TRUE) - log(choose(p, num_active[1]))
+        logPrM[1] <- logPrM_current <- logBetaBinomial(num_active[1], p, alpha_bb, beta_bb) - log(choose(p, num_active[1]))
     }
 
     # calculate log(fitness) = marginal_ll - logPrM
@@ -231,7 +231,7 @@ bvs_sample <- function(x,
             logPrM_new <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
         } else {
             #logPrM_new <- logBetaBinomial(p = p, pgamma = num_active_new)
-            logPrM_new <- dbb(x = num_active_new, N = p, u = alpha_bb, v = beta_bb, log = TRUE) - log(choose(p, num_active_new))
+            logPrM_new <- logBetaBinomial(num_active_new, p, alpha_bb, beta_bb) - log(choose(p, num_active_new))
         }
 
         # calculate logfitness = loglike + logPrM

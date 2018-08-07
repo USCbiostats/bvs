@@ -60,7 +60,7 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
         if (object$model_info$inform) {
             logPrM <- c(sum(pnorm(0, mean = rep(a0, p), lower.tail = TRUE, log.p = TRUE)), logPrM)
         } else {
-            logPrM <- c(dbb(x = 0, N = p, u = alpha_bb, v = beta_bb, log = TRUE), logPrM)
+            logPrM <- c(logBetaBinomial(0, p, alpha_bb, beta_bb), logPrM)
         }
         loglike <- c(0.5 * object$model_info$null_dev, loglike)
         logfitness <- c(object$model_info$nullLogLike + logPrM[1], logfitness)
