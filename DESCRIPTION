@@ -15,5 +15,6 @@ Imports:
     stats,
     MASS,
     msm,
-    haplo.stats
+    haplo.stats,
+    TailRank
 RoxygenNote: 6.0.1
