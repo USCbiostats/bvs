@@ -46,11 +46,13 @@ plot.summary.bvs <- function(x,
     post_prob <- x$model_level$post_prob
     null_ind <- which(rowSums(active) == 0)
     null_post <- post_prob[null_ind]
+    model_id <- x$model_level$model_id[-null_ind]
     active <- active[-null_ind, , drop = FALSE]
     post_prob <- post_prob[-null_ind]
     num_snps <- min(ncol(active), num_snps)
     num_models <- min(nrow(active) - 1, num_models)
     model_order <- order(post_prob, decreasing = TRUE)
+    model_id <- model_id[model_order][1:num_models]
     post_prob <- post_prob[model_order]
     active <- active[model_order, , drop = FALSE]
 
@@ -123,11 +125,16 @@ plot.summary.bvs <- function(x,
     prob_axis <- post_prob[1:num_models] / sum(post_prob[1:num_models])
     prob_axis_cum <- cumsum(prob_axis)
     clr <- c("#FFFFFF", "#A020F0", "#0000CD")
+    if (plot_coef) {
+        xlab = "log(OR) (Models Ranked by Post. Prob)"
+    } else {
+        xlab = "Model ID (Models Ranked by Post. Prob)"
+    }
     image(x = c(0, prob_axis_cum),
           y = 1:nvar,
           z = color_matrix,
           col = clr,
-          xlab = "Models Ranked by Post. Prob.",
+          xlab = xlab,
           ylab = "",
           xaxt = "n",
           yaxt ="n",
@@ -142,7 +149,7 @@ plot.summary.bvs <- function(x,
         }
         axis(1, at = xat,labels = beta.labels)
     } else {
-        axis(1, at = xat, labels = c(1:num_models))
+        axis(1, at = xat, labels = model_id)
     }
     axis(2, at = 1:nvar, labels = rownms)
     axis(4, at = 1:nvar, labels = prob_labels)
