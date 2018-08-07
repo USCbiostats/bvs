@@ -32,29 +32,35 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
         a1 <- t(object$alpha)
     }
 
-    # get unique values for all accepted models
-    models_id <- object$models_accepted$model_id[models_sub]
+    # get unique values for all accepted models / sort into order first accepted
+    model_id <- object$models_accepted$model_id[models_sub]
     active <- object$models_accepted$active[models_sub]
+    num_active <- object$models_accepted$num_active[models_sub]
     loglike <- object$models_accepted$loglike[models_sub]
     coef <- t(object$models_accepted$coef[models_sub, , drop = FALSE])
-    logfitness <- object$logfitness[match(models_id, object$model_path)]
-    logPrM <- object$logPrM[match(models_id, object$model_path)]
+    logfitness <- object$logfitness[match(model_id, object$model_path)]
+    logPrM <- object$logPrM[match(model_id, object$model_path)]
 
     # parameters
     p <- object$model_info$nvars
     p_cov <- object$model_info$nvars_prior
+    alpha_bb <- object$model_info$prior_model$alpha
+    beta_bb <- object$model_info$prior_model$beta
     num_coef <- nrow(coef)
     a0 <- qnorm(1 - 2^(-1 / p))
 
     # make sure null model is in the results
     null_ind <- which(active == "0")
     if (length(null_ind) == 0) {
+        model_id <- c(0, model_id)
         active <- c("0", active)
+        num_active <- c(0, num_active)
+        loglike <- c(object$model_info$nullLogLike, loglike)
         coef <- cbind(0, coef)
         if (object$model_info$inform) {
             logPrM <- c(sum(pnorm(0, mean = rep(a0, p), lower.tail = TRUE, log.p = TRUE)), logPrM)
         } else {
-            logPrM <- c(logBetaBinomial(p = p, pgamma = 0), logPrM)
+            logPrM <- c(dbb(x = 0, N = p, u = alpha_bb, v = beta_bb, log = TRUE), logPrM)
         }
         loglike <- c(0.5 * object$model_info$null_dev, loglike)
         logfitness <- c(object$model_info$nullLogLike + logPrM[1], logfitness)
@@ -135,14 +141,18 @@ summary.bvs <- function(object, burnin = 1000, prior_cov = NULL, ...)
 
     ##Save Results
     results <- list("global_bf" = global_bf,
-                    "region_bf" = region_marg_bf,
                     "marg_bf" = global_marg_bf,
                     "post_coef" = post_coef,
-                    "prior_prob" = exp(new_lPrM),
-                    "post_prob" = PrMgivenD,
-                    "coef" = t(coef),
-                    "active" = active_mat,
-                    "active_region" = active_region,
+                    region_level = list("region_bf" = region_marg_bf,
+                                        "active_region" = active_region),
+                    model_level = list("model_id" = model_id,
+                                       "active" = active,
+                                       "num_active" = num_active,
+                                       "loglike" = loglike,
+                                       "prior_prob" = exp(new_lPrM),
+                                       "post_prob" = PrMgivenD,
+                                       "coef" = t(coef),
+                                       "active_mat" = active_mat),
                     "post_alpha" = post_alpha,
                     "model_info" = object$model_info)
     class(results) <- "summary.bvs"

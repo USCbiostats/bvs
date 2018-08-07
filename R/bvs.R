@@ -20,7 +20,13 @@ NULL
 #'    covariates (alpha).
 #'    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
 #' }
-#' @param prior_coef (optional) specifies prior for regression coefficients (only for use when family = "gaussian").
+#' @param prior_model specifies parameters for beta-binomial prior on model size. To specify, pass a list with the following elements
+#' \itemize{
+#'    \item \eqn{alpha} = numeric value for first shape parameter (default = 1)
+#'    \item \eqn{beta} = numeric value for second shape parameter (default = p)
+#' }
+#' Example: \code{list(alpha = 1, beta = 2)}
+#' @param prior_coef specifies prior for regression coefficients (only for use when family = "gaussian").
 #' \itemize{
 #'    \item "none" (default)
 #'    \item "gprior": To specify the parameters for the g-prior, pass a list object with the following elements
@@ -51,6 +57,7 @@ NULL
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @importFrom MASS mvrnorm
 #' @importFrom msm rtnorm
+#' @importFrom TailRank dbb
 
 #' @export
 bvs <- function(y,
@@ -59,6 +66,7 @@ bvs <- function(y,
                 intercept = TRUE,
                 family = c("gaussian", "binomial"),
                 method = c("sample", "enumerate"),
+                prior_model = list(alpha = 1, beta = p),
                 prior_coef = list("none"),
                 rare = FALSE,
                 regions = NULL,
@@ -104,7 +112,17 @@ bvs <- function(y,
     if (!(typeof(x) %in% c("double", "numeric", "integer")))
         stop("x contains non-numeric values")
 
-    # check prior (coef)
+    # check prior(model) if using sample
+    if (method == "sample") {
+        if (prior_model[[1]] < 0.0) {
+            stop("alpha must be > 0")
+        }
+        if (prior_model[[2]] < 0.0) {
+            stop("beta must be > 0")
+        }
+    }
+
+    # check prior(coef)
     if (prior_coef[[1]] == "gprior") {
         if (length(prior_coef) != 4) {
             stop(paste("number of arguments (", length(prior_coef), ") for gprior not correct"))
@@ -195,7 +213,7 @@ bvs <- function(y,
                                             rare, hap, region_ind, forced, p_forced,
                                             inform, prior_cov, p_cov, a1, which_ind),
 
-                  sample = bvs_sample(x, y, n, p, intercept, family, prior_coef, rare,
+                  sample = bvs_sample(x, y, n, p, intercept, family, prior_model, prior_coef, rare,
                                       hap, region_ind, num_regions, forced, p_forced,
                                       inform, prior_cov, p_cov, which_ind, iter)
     )
@@ -222,6 +240,7 @@ bvs <- function(y,
     }
 
     fit$model_info <- list(method = method,
+                           prior_model = prior_model,
                            prior_coef = prior_coef,
                            nobs = n,
                            nvars = p,

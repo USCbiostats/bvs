@@ -38,12 +38,12 @@ plot.summary.bvs <- function(x,
 
     # check type
     type <- match.arg(type)
-    if (type == "r" && is.null(x$active_region)) {
+    if (type == "r" && is.null(x$region_level$active_region)) {
         stop("Error: type = 'r', but active_region = NULL in bvs.summary x")
     }
 
-    active <- x$active
-    post_prob <- x$post_prob
+    active <- x$model_level$active_mat
+    post_prob <- x$model_level$post_prob
     null_ind <- which(rowSums(active) == 0)
     null_post <- post_prob[null_ind]
     active <- active[-null_ind, , drop = FALSE]
@@ -54,8 +54,8 @@ plot.summary.bvs <- function(x,
     post_prob <- post_prob[model_order]
     active <- active[model_order, , drop = FALSE]
 
-    if (!is.null(x$active_region)) {
-        active_region <- x$active_region[-null_ind, ][model_order, , drop = FALSE]
+    if (!is.null(x$region_level$active_region)) {
+        active_region <- x$region_level$active_region[-null_ind, ][model_order, , drop = FALSE]
         regionnames <- colnames(active_region)
         if (!is.null(regions)) {
             warning("Note: Overwriting regions in bvs.summary x with values provided for regions = argument.")
@@ -70,7 +70,7 @@ plot.summary.bvs <- function(x,
                     To use plot_coef, check that your model has rare = TRUE and does not have multiple regions.")
             plot_coef <- FALSE
         } else {
-            coef <- drop(x$coef[-null_ind, ][model_order, ])
+            coef <- drop(x$model_level$coef[-null_ind, ][model_order, ])
         }
     }
 
@@ -99,7 +99,7 @@ plot.summary.bvs <- function(x,
         }
     } else {
         nvar <- min(length(regionnames), num_regions)
-        bf_region <- x$region_bf
+        bf_region <- x$region_level$region_bf
         order_top <- order(bf_region, decreasing = TRUE)[1:nvar]
         bf_region <- bf_region[order_top]
         rownms <- colnames(active_region)[order_top]

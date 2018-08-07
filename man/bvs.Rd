@@ -5,9 +5,10 @@
 \title{Bayesian Variable Selection}
 \usage{
 bvs(y, x, forced = NULL, intercept = TRUE, family = c("gaussian",
-  "binomial"), method = c("sample", "enumerate"), prior_coef = list("none"),
-  rare = FALSE, regions = NULL, prior_cov = NULL, a1 = 0, hap = FALSE,
-  iter = 10000, control = list())
+  "binomial"), method = c("sample", "enumerate"), prior_model = list(alpha =
+  1, beta = p), prior_coef = list("none"), rare = FALSE, regions = NULL,
+  prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000,
+  control = list())
 }
 \arguments{
 \item{y}{outcome variable}
@@ -33,7 +34,14 @@ analysis for and that will be forced into every model.}
    \item "enumerate": computes and summarizes all possible models in model space. Not recommended for problems where \eqn{p > 20}.
 }}
 
-\item{prior_coef}{(optional) specifies prior for regression coefficients (only for use when family = "gaussian").
+\item{prior_model}{specifies parameters for beta-binomial prior on model size. To specify, pass a list with the following elements
+\itemize{
+   \item \eqn{alpha} = numeric value for first shape parameter (default = 1)
+   \item \eqn{beta} = numeric value for second shape parameter (default = p)
+}
+Example: \code{list(alpha = 1, beta = 2)}}
+
+\item{prior_coef}{specifies prior for regression coefficients (only for use when family = "gaussian").
 \itemize{
    \item "none" (default)
    \item "gprior": To specify the parameters for the g-prior, pass a list object with the following elements

@@ -4,6 +4,7 @@ bvs_sample <- function(x,
                        p,
                        intercept,
                        family,
+                       prior_model,
                        prior_coef,
                        rare,
                        hap,
@@ -33,6 +34,10 @@ bvs_sample <- function(x,
         family_func$mu.eta <- identity_mu_eta
         mustart <- y
     }
+
+    # initialize model size beta-binomial parameters
+    alpha_bb <- prior_model[[1]]
+    beta_bb <- prior_model[[2]]
 
     # compute null marginal log like
     nullLogLike <- bvs_fit(z = NULL,
@@ -129,7 +134,8 @@ bvs_sample <- function(x,
         lprob_ninc <- pnorm(0, mean = mu, lower.tail = TRUE, log.p = TRUE)
         logPrM[1] <- logPrM_current <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
     } else {
-        logPrM[1] <- logPrM_current <- logBetaBinomial(p = p, pgamma = num_active[1])
+        #logPrM[1] <- logPrM_current <- logBetaBinomial(p = p, pgamma = num_active[1])
+        logPrM[1] <- logPrM_current <- dbb(x = num_active[1], N = p, u = alpha_bb, v = beta_bb, log = TRUE) - log(choose(p, num_active[1]))
     }
 
     # calculate log(fitness) = marginal_ll - logPrM
@@ -224,10 +230,11 @@ bvs_sample <- function(x,
         if (inform) {
             logPrM_new <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
         } else {
-            logPrM_new <- logBetaBinomial(p = p, pgamma = num_active_new)
+            #logPrM_new <- logBetaBinomial(p = p, pgamma = num_active_new)
+            logPrM_new <- dbb(x = num_active_new, N = p, u = alpha_bb, v = beta_bb, log = TRUE) - log(choose(p, num_active_new))
         }
 
-        # calculate fitness = loglike + logPrM
+        # calculate logfitness = loglike + logPrM
         fitness_new <- loglike[model_propose] + logPrM_new
 
         #If fit ratio > runif(1), accept new model and z, else keep current model
