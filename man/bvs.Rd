@@ -26,7 +26,7 @@ analysis for and that will be forced into every model.}
    \item "binomial"
 }}
 
-\item{method}{specifies how to search the model space
+\item{method}{specifies how to search the model space, options include
 \itemize{
    \item "sample" (default) : performs basic Metropolis-Hastings algorithm to sample models from model space. For informative
    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
@@ -41,7 +41,7 @@ analysis for and that will be forced into every model.}
 }
 Example: \code{list(alpha = 1, beta = 2)}}
 
-\item{prior_coef}{specifies prior for regression coefficients (only for use when family = "gaussian").
+\item{prior_coef}{specifies prior for regression coefficients (only for use when family = "gaussian"), options include
 \itemize{
    \item "none" (default)
    \item "gprior": To specify the parameters for the g-prior, pass a list object with the following elements

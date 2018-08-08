@@ -13,7 +13,7 @@ NULL
 #'    \item "gaussian" (default)
 #'    \item "binomial"
 #' }
-#' @param method specifies how to search the model space
+#' @param method specifies how to search the model space, options include
 #' \itemize{
 #'    \item "sample" (default) : performs basic Metropolis-Hastings algorithm to sample models from model space. For informative
 #'    marginal inclusion probabilities, the algorithm also performs basic MCMC algorithm to sample the effects of predictor-level
@@ -26,7 +26,7 @@ NULL
 #'    \item \eqn{beta} = numeric value for second shape parameter (default = p)
 #' }
 #' Example: \code{list(alpha = 1, beta = 2)}
-#' @param prior_coef specifies prior for regression coefficients (only for use when family = "gaussian").
+#' @param prior_coef specifies prior for regression coefficients (only for use when family = "gaussian"), options include
 #' \itemize{
 #'    \item "none" (default)
 #'    \item "gprior": To specify the parameters for the g-prior, pass a list object with the following elements

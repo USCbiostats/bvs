@@ -128,7 +128,7 @@ bvs_enumerate <- function(x,
         if (inform) {
             logPrM[i] <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
         } else {
-            logPrM[i] <- logBetaBinomial(num_active[i], p, alpha_bb, beta_bb) - log(choose(p, num_active[i]))
+            logPrM[i] <- computePrior(num_active[i], p, alpha_bb, beta_bb)
         }
 
         # calculate logfitness = loglike - logPrM
