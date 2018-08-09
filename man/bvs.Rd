@@ -7,7 +7,7 @@
 bvs(y, x, forced = NULL, intercept = TRUE, family = c("gaussian",
   "binomial"), method = c("sample", "enumerate"), prior_model = list(alpha =
   1, beta = p), prior_coef = list("none"), rare = FALSE, regions = NULL,
-  prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000,
+  prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000, maxk = 3,
   control = list())
 }
 \arguments{
@@ -71,7 +71,9 @@ wishes to incorporate into the estimation of the marginal inclusion probabilitie
 \item{hap}{(not yet implemented) if hap = TRUE, esimtate a set of haplotypes from the multiple variants within each moel and the marginal likelihood
 of each model is calculated based on the set of haplotypes.}
 
-\item{iter}{if method = "sample", the number of iterations to run the algorithm.}
+\item{iter}{if method = "sample", the number of iterations to run the algorithm. Default = 1000.}
+
+\item{maxk}{if method = "enumerate", the maximum model size (k) to consider when enumerating all possible models. Default = 3.}
 
 \item{control}{specifies 'bvs' control object.}
 }

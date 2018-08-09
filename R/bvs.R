@@ -50,7 +50,8 @@ NULL
 #' @param a1 (optional) if method = "enumerate", a \eqn{q x 1} vector of specified effects of each predictor-level covariate.
 #' @param hap (not yet implemented) if hap = TRUE, esimtate a set of haplotypes from the multiple variants within each moel and the marginal likelihood
 #' of each model is calculated based on the set of haplotypes.
-#' @param iter if method = "sample", the number of iterations to run the algorithm.
+#' @param iter if method = "sample", the number of iterations to run the algorithm. Default = 1000.
+#' @param maxk if method = "enumerate", the maximum model size (k) to consider when enumerating all possible models. Default = 3.
 #' @param control specifies 'bvs' control object.
 #'
 #' @import stats haplo.stats
@@ -73,6 +74,7 @@ bvs <- function(y,
                 a1 = 0,
                 hap = FALSE,
                 iter = 10000,
+                maxk = 3,
                 control = list())
 {
 
@@ -204,10 +206,13 @@ bvs <- function(y,
         p_cov <- 0
     }
 
+    # check number of models to enumerate
+    if (sum(sapply(1:maxk, function(x) choose(p, x))))
+
     # fit models by enumerating all combinations or M-H
     fit <- switch(method,
                   enumerate = bvs_enumerate(x, y, n, p, intercept, family, prior_model, prior_coef,
-                                            rare, hap, region_ind, forced, p_forced,
+                                            rare, hap, region_ind, forced, p_forced, maxk,
                                             inform, prior_cov, p_cov, a1, which_ind),
 
                   sample = bvs_sample(x, y, n, p, intercept, family, prior_model, prior_coef, rare,
