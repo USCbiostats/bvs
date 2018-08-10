@@ -49,6 +49,12 @@ bvs_enumerate <- function(x,
 
     # initialize objects to hold results
     num_models <- sum(sapply(1:maxk, function(x) choose(p, x))) + 1
+    if (num_models > 100000) {
+        continue_analysis <- menu(c("Yes", "No"), title = paste0("Warning: Number of models (", num_models,") to compute is very large. Do you want to continue?"))
+        if(continue_analysis == 2) {
+            return(NULL)
+        }
+    }
     loglike <- rep(NA, num_models)
     logfitness <- rep(NA, num_models)
     logPrM <- rep(NA, num_models)
