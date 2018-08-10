@@ -106,7 +106,7 @@ bvs_enumerate <- function(x,
         # fit all models of size k
         for (i in 1L:NCOL(models_size_k)) {
             z_current <- 1:p %in% models_size_k[, i]
-            active[idx] <- paste0(models_size_k[i], collapse = "-")
+            active[idx] <- paste0(models_size_k[, i], collapse = "-")
             num_active[idx] <- sum(z_current)
 
             # fit model
