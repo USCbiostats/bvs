@@ -3,6 +3,7 @@
 S3method(plot,summary.bvs)
 S3method(summary,bvs)
 export(bvs)
+import(foreach)
 import(haplo.stats)
 import(stats)
 importFrom(MASS,mvrnorm)

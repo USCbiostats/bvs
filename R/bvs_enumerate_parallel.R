@@ -1,22 +1,22 @@
-bvs_enumerate <- function(x,
-                          y,
-                          n,
-                          p,
-                          intercept,
-                          family,
-                          prior_model,
-                          prior_coef,
-                          rare,
-                          hap,
-                          region_ind,
-                          forced,
-                          p_forced,
-                          maxk,
-                          inform,
-                          cov,
-                          p_cov,
-                          a1,
-                          which_ind)
+bvs_enumerate_parallel <- function(x,
+                                   y,
+                                   n,
+                                   p,
+                                   intercept,
+                                   family,
+                                   prior_model,
+                                   prior_coef,
+                                   rare,
+                                   hap,
+                                   region_ind,
+                                   forced,
+                                   p_forced,
+                                   maxk,
+                                   inform,
+                                   cov,
+                                   p_cov,
+                                   a1,
+                                   which_ind)
 {
 
     # initialize glm parameters
@@ -50,14 +50,6 @@ bvs_enumerate <- function(x,
     # initialize objects to hold results
     num_models <- sum(sapply(1:maxk, function(x) choose(p, x))) + 1
 
-    loglike <- rep(NA, num_models)
-    logfitness <- rep(NA, num_models)
-    logPrM <- rep(NA, num_models)
-    active <- rep(NA, num_models)
-    num_active <- rep(NA, num_models)
-    coef <- matrix(0, nrow = num_models, ncol = length(which_ind))
-    alpha <- rep(a1, num_models)
-
     # compute null model
     nullLogLike <- bvs_fit(z = NULL,
                            num_active = 0L,
@@ -80,35 +72,36 @@ bvs_enumerate <- function(x,
                            m = m)$marg_ll
 
 
-    active[1] <- "0"
-    num_active[1] <- 0
+    active <- "0"
+    num_active <- 0
     z_current <- rep(0, p)
     if (inform) {
-        logPrM[1] <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
+        logPrM <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
     } else {
-        logPrM[1] <- computeModelPrior(0, p, alpha_bb, beta_bb)
+        logPrM <- computeModelPrior(0, p, alpha_bb, beta_bb)
     }
-    loglike[1] <- nullLogLike
-    logfitness[1] <- nullLogLike + logPrM[1]
+    loglike <- nullLogLike
+    logfitness <- nullLogLike + logPrM
+    coef <- matrix(0, nrow = length(which_ind), ncol = 1)
+    alpha <- rep(a1, num_models)
 
     # loop through all models
-    idx <- 2
-    if (num_models > idx) {
-        pb <- txtProgressBar(min = idx, max = num_models, style = 3)
+    if (num_models > 1) {
         for (k in 1L:maxk) {
 
             # get indices for all unique models of size k
             models_size_k <- combn(1:p, k)
+            active <- c(active, apply(models_size_k, 2, function(x) paste0(x, collapse = "-")))
+            num_active <- c(num_active, rep(k, NCOL(models_size_k)))
 
             # fit all models of size k
-            for (i in 1L:NCOL(models_size_k)) {
-                z_current <- 1:p %in% models_size_k[, i]
-                active[idx] <- paste0(models_size_k[, i], collapse = "-")
-                num_active[idx] <- sum(z_current)
+            resultk <- foreach(i = iter(models_size_k, by = "col"), .combine = 'cbind') %dopar% {
+
+                z_current <- 1:p %in% i
 
                 # fit model
                 fit_glm <- bvs_fit(z = z_current,
-                                   num_active = num_active[idx],
+                                   num_active = k,
                                    y = y,
                                    x = x,
                                    n = n,
@@ -127,37 +120,41 @@ bvs_enumerate <- function(x,
                                    mustart = mustart,
                                    m = m)
 
-                # get coef vector
-                if (fit_glm$num_vars > 0) {
-                    if (rare) {
-                        coef[idx, which_ind] <- fit_glm$coef
-                    } else {
-                        coef[idx, z_current] <- fit_glm$coef
-                    }
+                # get coef
+                if (rare) {
+                    coef_model <- rep(0.0, length(which_ind))
+                    coef_model[which_ind] <- fit_glm$coef
+                } else {
+                    coef_model <- rep(0.0, p)
+                    coef_model[z_current] <- fit_glm$coef
                 }
 
                 # get marginal log-likelihood
-                loglike[idx] <- fit_glm$marg_ll
+                loglike_model <- fit_glm$marg_ll
 
                 # calculate prior on model
                 # If inform ==TRUE use probit specification
                 # and if mult.regions==TRUE use region level probit specification
                 if (inform) {
-                    logPrM[idx] <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
+                    logPrM_model <- sum(lprob_inc[z_current]) + sum(lprob_ninc[!z_current])
                 } else {
-                    logPrM[idx] <- computeModelPrior(num_active[idx], p, alpha_bb, beta_bb)
+                    logPrM_model <- computeModelPrior(k, p, alpha_bb, beta_bb)
                 }
 
                 # calculate logfitness = loglike - logPrM
-                logfitness[idx] <- loglike[idx] + logPrM[idx]
+                logfitness_model <- loglike_model + logPrM_model
 
-                # update progress
-                idx <- idx + 1
-                setTxtProgressBar(pb, idx)
+                c(logfitness_model, loglike_model, logPrM_model, coef_model)
             }
+
+            logfitness <- c(logfitness, unname(resultk[1, ]))
+            loglike <- c(loglike, unname(resultk[2, ]))
+            logPrM <- c(logPrM, unname(resultk[3, ]))
+            coef <- cbind(coef, unname(resultk[-c(1:3), , drop = FALSE]))
         }
     }
 
+    coef <- t(coef)
     rownames(coef) <- 1:num_models
     models_accepted <- list(model_id = 1:num_models,
                             active = active,

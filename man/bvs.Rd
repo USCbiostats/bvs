@@ -8,7 +8,7 @@ bvs(y, x, forced = NULL, intercept = TRUE, family = c("gaussian",
   "binomial"), method = c("sample", "enumerate"), prior_model = list(alpha =
   1, beta = p), prior_coef = list("none"), rare = FALSE, regions = NULL,
   prior_cov = NULL, a1 = 0, hap = FALSE, iter = 10000, maxk = 3,
-  control = list())
+  parallel = FALSE, control = list())
 }
 \arguments{
 \item{y}{outcome variable}

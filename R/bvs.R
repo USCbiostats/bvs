@@ -54,7 +54,7 @@ NULL
 #' @param maxk if method = "enumerate", the maximum model size (k) to consider when enumerating all possible models. Default = 3.
 #' @param control specifies 'bvs' control object.
 #'
-#' @import stats haplo.stats
+#' @import stats haplo.stats foreach
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @importFrom MASS mvrnorm
 #' @importFrom msm rtnorm
@@ -75,6 +75,7 @@ bvs <- function(y,
                 hap = FALSE,
                 iter = 10000,
                 maxk = 3,
+                parallel = FALSE,
                 control = list())
 {
 
@@ -104,6 +105,9 @@ bvs <- function(y,
     # check x and dim x/y
     n <- nrow(x)
     p <- ncol(x)
+    if (p == 0) {
+        warning(paste0("There are no variables in the model (ncol(x) = ", p, ")"))
+    }
     y_len <- length(y)
 
     if (n != y_len)
@@ -167,6 +171,7 @@ bvs <- function(y,
         }
     } else {
         which_ind <- 1:p
+        region_ind <- NULL
     }
 
     # check forced + intercept
@@ -206,19 +211,33 @@ bvs <- function(y,
         p_cov <- 0
     }
 
-    # check number of models to enumerate
-    if (sum(sapply(1:maxk, function(x) choose(p, x))))
-
     # fit models by enumerating all combinations or M-H
-    fit <- switch(method,
-                  enumerate = bvs_enumerate(x, y, n, p, intercept, family, prior_model, prior_coef,
-                                            rare, hap, region_ind, forced, p_forced, maxk,
-                                            inform, prior_cov, p_cov, a1, which_ind),
+    if (parallel) {
+        fit <- switch(method,
+                      enumerate = bvs_enumerate_parallel(x, y, n, p, intercept, family, prior_model, prior_coef,
+                                                         rare, hap, region_ind, forced, p_forced, maxk,
+                                                         inform, prior_cov, p_cov, a1, which_ind),
 
-                  sample = bvs_sample(x, y, n, p, intercept, family, prior_model, prior_coef, rare,
-                                      hap, region_ind, num_regions, forced, p_forced,
-                                      inform, prior_cov, p_cov, which_ind, iter)
-    )
+                      sample = bvs_sample(x, y, n, p, intercept, family, prior_model, prior_coef, rare,
+                                          hap, region_ind, num_regions, forced, p_forced,
+                                          inform, prior_cov, p_cov, which_ind, iter)
+        )
+    } else {
+        fit <- switch(method,
+                      enumerate = bvs_enumerate(x, y, n, p, intercept, family, prior_model, prior_coef,
+                                                rare, hap, region_ind, forced, p_forced, maxk,
+                                                inform, prior_cov, p_cov, a1, which_ind),
+
+                      sample = bvs_sample(x, y, n, p, intercept, family, prior_model, prior_coef, rare,
+                                          hap, region_ind, num_regions, forced, p_forced,
+                                          inform, prior_cov, p_cov, which_ind, iter)
+        )
+    }
+
+    if (is.null(fit)) {
+        cat("Warning: bvs stopped early, no results returned")
+        return(NULL)
+    }
 
     # add name attributes
     if (!is.null(colnames(x))) {

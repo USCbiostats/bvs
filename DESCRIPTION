@@ -15,5 +15,6 @@ Imports:
     stats,
     MASS,
     msm,
-    haplo.stats
+    haplo.stats,
+    foreach
 RoxygenNote: 6.0.1
