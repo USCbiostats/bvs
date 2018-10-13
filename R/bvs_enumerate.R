@@ -93,7 +93,7 @@ bvs_enumerate <- function(x,
 
     # loop through all models
     idx <- 2
-    if (num_models > idx) {
+    if (num_models > 1) {
         pb <- txtProgressBar(min = idx, max = num_models, style = 3)
         for (k in 1L:maxk) {
 
